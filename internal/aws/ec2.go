@@ -3,6 +3,7 @@ package aws
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"sort"
 	"sync"
 	"time"
@@ -11,7 +12,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	"github.com/sirupsen/logrus"
 
 	"github.com/nlamirault/e2c/internal/model"
 )
@@ -19,7 +19,7 @@ import (
 // EC2Client handles interactions with AWS EC2 API
 type EC2Client struct {
 	client     *ec2.Client
-	log        *logrus.Logger
+	log        *slog.Logger
 	region     string
 	instancesM sync.Mutex
 	instances  []model.Instance
@@ -31,25 +31,25 @@ func (c *EC2Client) GetRegion() string {
 }
 
 // NewEC2Client creates a new EC2 client
-func NewEC2Client(log *logrus.Logger, region, profile string) (*EC2Client, error) {
-	log.WithFields(logrus.Fields{
-		"region":  region,
-		"profile": profile,
-	}).Info("Creating new EC2 client")
+func NewEC2Client(log *slog.Logger, region, profile string) (*EC2Client, error) {
+	log.Info("Creating new EC2 client", 
+		"region", region,
+		"profile", profile,
+	)
 
 	// Configure AWS SDK
 	var cfg aws.Config
 	var err error
 
 	if profile != "" {
-		log.WithField("profile", profile).Info("Loading AWS config with profile")
+		log.Info("Loading AWS config with profile", "profile", profile)
 		cfg, err = config.LoadDefaultConfig(
 			context.Background(),
 			config.WithRegion(region),
 			config.WithSharedConfigProfile(profile),
 		)
 	} else {
-		log.WithField("region", region).Info("Loading AWS config without profile")
+		log.Info("Loading AWS config without profile", "region", region)
 		cfg, err = config.LoadDefaultConfig(
 			context.Background(),
 			config.WithRegion(region),
@@ -107,7 +107,7 @@ func (c *EC2Client) ListInstances(ctx context.Context) ([]model.Instance, error)
 	c.instances = instances
 	c.instancesM.Unlock()
 
-	c.log.WithField("count", len(instances)).Info("Retrieved EC2 instances")
+	c.log.Info("Retrieved EC2 instances", "count", len(instances))
 
 	return instances, nil
 }
@@ -121,7 +121,7 @@ func (c *EC2Client) GetInstances() []model.Instance {
 
 // StartInstance starts an EC2 instance
 func (c *EC2Client) StartInstance(ctx context.Context, instanceID string) error {
-	c.log.WithField("instanceID", instanceID).Info("Starting EC2 instance")
+	c.log.Info("Starting EC2 instance", "instanceID", instanceID)
 
 	input := &ec2.StartInstancesInput{
 		InstanceIds: []string{instanceID},
@@ -137,7 +137,7 @@ func (c *EC2Client) StartInstance(ctx context.Context, instanceID string) error 
 
 // StopInstance stops an EC2 instance
 func (c *EC2Client) StopInstance(ctx context.Context, instanceID string) error {
-	c.log.WithField("instanceID", instanceID).Info("Stopping EC2 instance")
+	c.log.Info("Stopping EC2 instance", "instanceID", instanceID)
 
 	input := &ec2.StopInstancesInput{
 		InstanceIds: []string{instanceID},
@@ -153,7 +153,7 @@ func (c *EC2Client) StopInstance(ctx context.Context, instanceID string) error {
 
 // RebootInstance reboots an EC2 instance
 func (c *EC2Client) RebootInstance(ctx context.Context, instanceID string) error {
-	c.log.WithField("instanceID", instanceID).Info("Rebooting EC2 instance")
+	c.log.Info("Rebooting EC2 instance", "instanceID", instanceID)
 
 	input := &ec2.RebootInstancesInput{
 		InstanceIds: []string{instanceID},
@@ -169,7 +169,7 @@ func (c *EC2Client) RebootInstance(ctx context.Context, instanceID string) error
 
 // TerminateInstance terminates an EC2 instance
 func (c *EC2Client) TerminateInstance(ctx context.Context, instanceID string) error {
-	c.log.WithField("instanceID", instanceID).Info("Terminating EC2 instance")
+	c.log.Info("Terminating EC2 instance", "instanceID", instanceID)
 
 	input := &ec2.TerminateInstancesInput{
 		InstanceIds: []string{instanceID},
@@ -185,7 +185,7 @@ func (c *EC2Client) TerminateInstance(ctx context.Context, instanceID string) er
 
 // GetInstanceConsoleOutput retrieves the console output of an EC2 instance
 func (c *EC2Client) GetInstanceConsoleOutput(ctx context.Context, instanceID string) (string, error) {
-	c.log.WithField("instanceID", instanceID).Info("Getting console output for EC2 instance")
+	c.log.Info("Getting console output for EC2 instance", "instanceID", instanceID)
 
 	input := &ec2.GetConsoleOutputInput{
 		InstanceId: aws.String(instanceID),

@@ -3,12 +3,12 @@ package ui
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"sync"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	"github.com/sirupsen/logrus"
 
 	"github.com/nlamirault/e2c/internal/aws"
 	"github.com/nlamirault/e2c/internal/color"
@@ -24,7 +24,7 @@ type UI struct {
 	overviewPanel *OverviewPanel
 	statusBar     *StatusBar
 	helpView      *HelpView
-	log           *logrus.Logger
+	log           *slog.Logger
 	ec2Client     *aws.EC2Client
 	config        *config.Config
 	ctx           context.Context
@@ -35,7 +35,7 @@ type UI struct {
 }
 
 // NewUI creates a new UI instance
-func NewUI(log *logrus.Logger, ec2Client *aws.EC2Client, cfg *config.Config) *UI {
+func NewUI(log *slog.Logger, ec2Client *aws.EC2Client, cfg *config.Config) *UI {
 	ctx, cancel := context.WithCancel(context.Background())
 	
 	// Initialize colors
@@ -194,7 +194,7 @@ func (ui *UI) RefreshInstances() {
 	go func() {
 		instances, err := ui.ec2Client.ListInstances(ui.ctx)
 		if err != nil {
-			ui.log.WithError(err).Error("Failed to list instances")
+			ui.log.Error("Failed to list instances", "error", err)
 			ui.statusBar.SetError(fmt.Sprintf("Error: %v", err))
 			return
 		}
@@ -453,7 +453,7 @@ func (ui *UI) handleStartInstance() {
 				err := ui.ec2Client.StartInstance(ui.ctx, selectedInstance.ID)
 				if err != nil {
 					ui.app.QueueUpdateDraw(func() {
-						ui.log.WithError(err).Error("Failed to start instance")
+						ui.log.Error("Failed to start instance", "error", err)
 						ui.statusBar.SetError(fmt.Sprintf("Error: %v", err))
 					})
 					return
@@ -491,7 +491,7 @@ func (ui *UI) handleStopInstance() {
 				err := ui.ec2Client.StopInstance(ui.ctx, selectedInstance.ID)
 				if err != nil {
 					ui.app.QueueUpdateDraw(func() {
-						ui.log.WithError(err).Error("Failed to stop instance")
+						ui.log.Error("Failed to stop instance", "error", err)
 						ui.statusBar.SetError(fmt.Sprintf("Error: %v", err))
 					})
 					return
@@ -529,7 +529,7 @@ func (ui *UI) handleRebootInstance() {
 				err := ui.ec2Client.RebootInstance(ui.ctx, selectedInstance.ID)
 				if err != nil {
 					ui.app.QueueUpdateDraw(func() {
-						ui.log.WithError(err).Error("Failed to reboot instance")
+						ui.log.Error("Failed to reboot instance", "error", err)
 						ui.statusBar.SetError(fmt.Sprintf("Error: %v", err))
 					})
 					return
@@ -562,7 +562,7 @@ func (ui *UI) handleTerminateInstance() {
 				err := ui.ec2Client.TerminateInstance(ui.ctx, selectedInstance.ID)
 				if err != nil {
 					ui.app.QueueUpdateDraw(func() {
-						ui.log.WithError(err).Error("Failed to terminate instance")
+						ui.log.Error("Failed to terminate instance", "error", err)
 						ui.statusBar.SetError(fmt.Sprintf("Error: %v", err))
 					})
 					return
@@ -642,7 +642,7 @@ func (ui *UI) handleViewLogs() {
 		output, err := ui.ec2Client.GetInstanceConsoleOutput(ui.ctx, selectedInstance.ID)
 		if err != nil {
 			ui.app.QueueUpdateDraw(func() {
-				ui.log.WithError(err).Error("Failed to get console output")
+				ui.log.Error("Failed to get console output", "error", err)
 				ui.statusBar.SetError(fmt.Sprintf("Error: %v", err))
 			})
 			return

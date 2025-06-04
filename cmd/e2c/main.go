@@ -1,33 +1,34 @@
 package main
 
 import (
+	"log/slog"
 	"os"
 
 	"github.com/nlamirault/e2c/internal/cmd"
-	"github.com/sirupsen/logrus"
+	"github.com/nlamirault/e2c/internal/logger"
 )
 
 func main() {
-	log := logrus.New()
-	log.SetOutput(os.Stdout)
+	// Configure logger from environment variables
+	logConfig := logger.NewConfig()
 	
-	// Set log level based on environment variable
-	logLevel := os.Getenv("E2C_LOG_LEVEL")
-	if logLevel != "" {
-		level, err := logrus.ParseLevel(logLevel)
-		if err != nil {
-			log.WithError(err).Warnf("Invalid log level %s, defaulting to info", logLevel)
-			log.SetLevel(logrus.InfoLevel)
-		} else {
-			log.SetLevel(level)
-		}
-	} else {
-		log.SetLevel(logrus.InfoLevel)
+	// Set log level from environment variable
+	if envLevel := os.Getenv("E2C_LOG_LEVEL"); envLevel != "" {
+		logConfig.Level = logger.ParseLevel(envLevel)
 	}
+
+	// Set log format from environment variable
+	if envFormat := os.Getenv("E2C_LOG_FORMAT"); envFormat != "" {
+		logConfig.Format = logger.ParseFormat(envFormat)
+	}
+
+	// Create and set default logger
+	log := logger.New(logConfig)
+	logger.SetAsDefault(log)
 
 	// Execute the root command
 	if err := cmd.NewRootCommand(log).Execute(); err != nil {
-		log.WithError(err).Fatal("Failed to execute command")
+		slog.Error("Failed to execute command", "error", err)
 		os.Exit(1)
 	}
 }

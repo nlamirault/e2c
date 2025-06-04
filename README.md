@@ -39,6 +39,15 @@ e2c --profile my-profile
 # Start with a specific AWS region
 e2c --region us-west-2
 
+# Logging options
+e2c --log-format json                    # Use JSON format for logs
+e2c --log-format text                    # Use colored text format for logs (default)
+e2c --log-level debug                    # Set log level to debug (more verbose)
+e2c --log-level info                     # Set log level to info (default)
+e2c --log-level warn                     # Set log level to warning
+e2c --log-level error                    # Set log level to error (less verbose)
+e2c --log-format json --log-level debug  # Combine format and level options
+
 # Start e2c (with Nord color theme)
 e2c
 
@@ -87,6 +96,21 @@ ui:
   # Compact mode reduces whitespace in the UI
   compact: false
 ```
+
+### Environment Variables
+
+The following environment variables can be used to configure e2c:
+
+- `E2C_LOG_LEVEL`: Set the logging level (debug, info, warn, error)
+- `E2C_LOG_FORMAT`: Set the log format ("json" or "text"). Default is text format with colors
+
+Examples:
+```bash
+# Set environment variables before running e2c
+E2C_LOG_FORMAT=json E2C_LOG_LEVEL=debug e2c
+```
+
+Note: Command line flags take precedence over environment variables.
 
 ## Requirements
 
