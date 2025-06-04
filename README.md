@@ -33,49 +33,31 @@ Download the latest binary from the [releases page](https://github.com/nlamiraul
 # Start e2c with default profile
 e2c
 
-# Start with a specific AWS profile
-e2c --profile my-profile
-
 # Start with a specific AWS region
-e2c --region us-west-2
-
-# Logging options
-e2c --log-format json                    # Use JSON format for logs
-e2c --log-format text                    # Use colored text format for logs (default)
-e2c --log-level debug                    # Set log level to debug (more verbose)
-e2c --log-level info                     # Set log level to info (default)
-e2c --log-level warn                     # Set log level to warning
-e2c --log-level error                    # Set log level to error (less verbose)
-e2c --log-format json --log-level debug  # Combine format and level options
-
-# Start e2c (with Nord color theme)
-e2c
+e2c --region eu-west-1
 
 # Show help
 e2c --help
 ```
 
 ## Keyboard Shortcuts
+
 ## Key Shortcuts
 
-| Key | Action |
-| --- | ------ |
-| `?` | Help |
-| `q` | Quit |
-| `Esc` | Back/Close Dialog |
-| `f` | Filter instances |
-| `r` | Refresh |
-| `s` | Start selected instance |
-| `p` | Stop selected instance |
-| `b` | Reboot selected instance |
-| `t` | Terminate selected instance |
-| `c` | Connect to selected instance via SSH |
-| `l` | View instance logs |
-| `/` | Search |
-
-## Colors
-
-e2c uses the Nord color theme, a blue-tinted dark color scheme that provides good readability and visual comfort. This theme comes pre-configured with carefully selected colors for different UI elements and status indicators.
+| Key   | Action                               |
+| ----- | ------------------------------------ |
+| `?`   | Help                                 |
+| `q`   | Quit                                 |
+| `Esc` | Back/Close Dialog                    |
+| `f`   | Filter instances                     |
+| `r`   | Refresh                              |
+| `s`   | Start selected instance              |
+| `p`   | Stop selected instance               |
+| `b`   | Reboot selected instance             |
+| `t`   | Terminate selected instance          |
+| `c`   | Connect to selected instance via SSH |
+| `l`   | View instance logs                   |
+| `/`   | Search                               |
 
 ## Configuration
 
@@ -89,7 +71,7 @@ Configuration file located at `~/.config/e2c/config.yaml`:
 
 ```yaml
 aws:
-  default_region: us-west-2
+  default_region: eu-west-1
   refresh_interval: 30s
 
 ui:
@@ -105,6 +87,7 @@ The following environment variables can be used to configure e2c:
 - `E2C_LOG_FORMAT`: Set the log format ("json" or "text"). Default is text format with colors
 
 Examples:
+
 ```bash
 # Set environment variables before running e2c
 E2C_LOG_FORMAT=json E2C_LOG_LEVEL=debug e2c
@@ -123,4 +106,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT License
+Apache Version 2.0
