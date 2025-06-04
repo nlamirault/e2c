@@ -1,0 +1,19 @@
+aws:
+  # Default AWS region to use
+  default_region: eu-west-1
+
+  # Refresh interval for EC2 instance data (in seconds)
+  refresh_interval: 30s
+
+  # Optional AWS profile to use
+  # If not specified, the default credentials chain will be used
+  profile: ""
+
+ui:
+  # UI theme (dark or light)
+  theme: dark
+
+  # Compact mode reduces whitespace in the UI
+  compact: false
+  
+  # The UI uses the Nord color theme by default
