@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (C) Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// SPDX-License-Identifier: Apache-2.0
+
 package ui
 
 import (
@@ -16,15 +19,15 @@ import (
 
 // InstancesView represents the instances table view
 type InstancesView struct {
-	ui          *UI
-	table       *tview.Table
-	instances   []model.Instance
-	instancesM  sync.Mutex
-	selected    int
-	headers     []string
-	headerColor tcell.Color
-	textColor   tcell.Color
-	tagColor    tcell.Color
+	ui           *UI
+	table        *tview.Table
+	instances    []model.Instance
+	instancesM   sync.Mutex
+	selected     int
+	headers      []string
+	headerColor  tcell.Color
+	textColor    tcell.Color
+	tagColor     tcell.Color
 	runningColor tcell.Color
 	stoppedColor tcell.Color
 	pendingColor tcell.Color
@@ -34,14 +37,14 @@ type InstancesView struct {
 // NewInstancesView creates a new instances view
 func NewInstancesView(ui *UI) *InstancesView {
 	v := &InstancesView{
-		ui:          ui,
-		table:       tview.NewTable().SetSelectable(true, false).SetFixed(1, 0),
-		instances:   make([]model.Instance, 0),
-		selected:    0,
-		headers:     []string{"ID", "Name", "State", "Type", "Region", "Private IP", "Public IP", "Age"},
-		headerColor: color.AppColors.Title,
-		textColor:   color.AppColors.Foreground,
-		tagColor:    color.AppColors.Secondary,
+		ui:           ui,
+		table:        tview.NewTable().SetSelectable(true, false).SetFixed(1, 0),
+		instances:    make([]model.Instance, 0),
+		selected:     0,
+		headers:      []string{"ID", "Name", "State", "Type", "Region", "Private IP", "Public IP", "Age"},
+		headerColor:  color.AppColors.Title,
+		textColor:    color.AppColors.Foreground,
+		tagColor:     color.AppColors.Secondary,
 		runningColor: color.AppColors.Running,
 		stoppedColor: color.AppColors.Stopped,
 		pendingColor: color.AppColors.Pending,
@@ -130,7 +133,7 @@ func (v *InstancesView) UpdateInstances(instances []model.Instance) {
 			tview.NewTableCell(" "+instance.PublicIP+" ").
 				SetTextColor(v.textColor).
 				SetAlign(tview.AlignLeft))
-				
+
 		// Set Age
 		v.table.SetCell(row, 7,
 			tview.NewTableCell(" "+formatDuration(instance.Age)+" ").
@@ -158,9 +161,9 @@ func (v *InstancesView) GetSelectedInstance() *model.Instance {
 	}
 
 	v.selected = row - 1
-	
+
 	// Highlight the selected row is handled by tview automatically
-	
+
 	return &v.instances[v.selected]
 }
 
@@ -186,7 +189,7 @@ func (v *InstancesView) ShowInstanceDetails(instance model.Instance) {
   [blue]Public IP:[white]     %s
   [blue]Platform:[white]      %s
   [blue]Architecture:[white]  %s
-`, 
+`,
 		instance.ID,
 		instance.Name,
 		instance.Type,
@@ -209,18 +212,18 @@ func (v *InstancesView) ShowInstanceDetails(instance model.Instance) {
 			keys = append(keys, k)
 		}
 		sort.Strings(keys)
-		
+
 		// Group tags by category for better organization
 		categories := map[string]map[string]string{
-			"Resource": {},   // Resource-related tags (Name, stack info)
-			"Business": {},   // Business context tags (env, project, owner)
-			"Technical": {},  // Technical tags (role, version, tier)
-			"Other": {},      // Any other tags that don't fit above categories
+			"Resource":  {}, // Resource-related tags (Name, stack info)
+			"Business":  {}, // Business context tags (env, project, owner)
+			"Technical": {}, // Technical tags (role, version, tier)
+			"Other":     {}, // Any other tags that don't fit above categories
 		}
-	
+
 		for _, key := range keys {
 			value := instance.Tags[key]
-		
+
 			// Categorize tags
 			switch strings.ToLower(key) {
 			case "name", "aws:cloudformation:stack-name", "aws:cloudformation:logical-id", "aws:autoscaling:groupname":
@@ -233,22 +236,22 @@ func (v *InstancesView) ShowInstanceDetails(instance model.Instance) {
 				categories["Other"][key] = value
 			}
 		}
-	
+
 		// Display tags by category
 		for category, tagMap := range categories {
 			if len(tagMap) == 0 {
 				continue
 			}
-		
+
 			tagsSection += fmt.Sprintf("  [::b][yellow]%s Tags[white][::-]\n", category)
-		
+
 			// Sort keys within category
 			catKeys := make([]string, 0, len(tagMap))
 			for k := range tagMap {
 				catKeys = append(catKeys, k)
 			}
 			sort.Strings(catKeys)
-		
+
 			// Calculate the longest key for alignment
 			longestKey := 0
 			for _, key := range catKeys {
@@ -256,20 +259,20 @@ func (v *InstancesView) ShowInstanceDetails(instance model.Instance) {
 					longestKey = len(key)
 				}
 			}
-		
+
 			for _, key := range catKeys {
 				// Add padding for alignment
 				padding := strings.Repeat(" ", longestKey-len(key))
 				tagsSection += fmt.Sprintf("    [blue]%s%s:[white] %s\n", key, padding, tagMap[key])
 			}
-			
+
 			// Add a blank line between categories
 			tagsSection += "\n"
 		}
 	} else {
 		tagsSection += "  No tags found on this instance\n"
 	}
-	
+
 	// Combine all sections
 	details := baseDetails + tagsSection + "\n[yellow]Press Esc to close[-]"
 
@@ -278,17 +281,17 @@ func (v *InstancesView) ShowInstanceDetails(instance model.Instance) {
 		SetTitle(fmt.Sprintf(" Instance: %s ", instance.DisplayName())).
 		SetBorderColor(color.AppColors.Border).
 		SetTitleColor(color.AppColors.Title)
-	
-	// Create a modal that fills most of the screen
-	// Make the detail view wider to accommodate tags better
-		flex := tview.NewFlex().
+
+		// Create a modal that fills most of the screen
+		// Make the detail view wider to accommodate tags better
+	flex := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().
 			AddItem(nil, 0, 1, false).
-			AddItem(tview.NewFlex().
-				AddItem(nil, 0, 1, false).
-				AddItem(detailsText, 80, 1, true).
-				AddItem(nil, 0, 1, false), 0, 8, true).
-			AddItem(nil, 0, 1, false)
-	
+			AddItem(detailsText, 80, 1, true).
+			AddItem(nil, 0, 1, false), 0, 8, true).
+		AddItem(nil, 0, 1, false)
+
 	v.ui.pages.AddPage("modal", flex, true, true)
 }
 
@@ -331,8 +334,6 @@ func getStateColor(state string) tcell.Color {
 		return color.AppColors.Foreground
 	}
 }
-
-
 
 // formatDuration formats a duration in a human-readable way
 func formatDuration(d time.Duration) string {

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (C) Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// SPDX-License-Identifier: Apache-2.0
+
 package main
 
 import (
@@ -11,7 +14,7 @@ import (
 func main() {
 	// Configure logger from environment variables
 	logConfig := logger.NewConfig()
-	
+
 	// Set log level from environment variable
 	if envLevel := os.Getenv("E2C_LOG_LEVEL"); envLevel != "" {
 		logConfig.Level = logger.ParseLevel(envLevel)

@@ -1,19 +1,23 @@
+// SPDX-FileCopyrightText: Copyright (C) Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// SPDX-License-Identifier: Apache-2.0
+
 package ui
 
 import (
 	"fmt"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	
+
 	"github.com/nlamirault/e2c/internal/color"
 )
 
 // OverviewPanel represents the overview panel at the top of the UI
 type OverviewPanel struct {
-	ui         *UI
-	view       *tview.TextView
-	instanceCount int
-	region     string
+	ui               *UI
+	view             *tview.TextView
+	instanceCount    int
+	region           string
 	instancesRunning int
 	instancesStopped int
 	// Currently not using theme
@@ -22,8 +26,8 @@ type OverviewPanel struct {
 // NewOverviewPanel creates a new overview panel
 func NewOverviewPanel(ui *UI) *OverviewPanel {
 	panel := &OverviewPanel{
-		ui:        ui,
-		view:      tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignLeft),
+		ui:   ui,
+		view: tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignLeft),
 	}
 
 	// Set border and title with a more prominent style
@@ -69,9 +73,9 @@ func (p *OverviewPanel) Update(total, running, stopped int, region string) {
  [%s]?[%s]: Help       [%s]q[%s]: Quit       [%s]r[%s]: Refresh     [%s]f[%s]: Filter
  [%s]s[%s]: Start      [%s]p[%s]: Stop       [%s]b[%s]: Reboot      [%s]t[%s]: Terminate
  [%s]c[%s]: Connect    [%s]l[%s]: Logs       [%s]Esc[%s]: Back
-`, 
+`,
 		headerColor, textColor,
-		headerColor, textColor, p.instanceCount, 
+		headerColor, textColor, p.instanceCount,
 		runningColor, textColor, p.instancesRunning,
 		stoppedColor, textColor, p.instancesStopped,
 		otherColor, textColor, other,
@@ -101,7 +105,7 @@ func (p *OverviewPanel) UpdateTheme() {
 	// Update border and title colors
 	p.view.SetBorderColor(color.AppColors.Border)
 	p.view.SetTitleColor(color.AppColors.Title)
-	
+
 	// Refresh the panel with new colors
 	p.Update(p.instanceCount, p.instancesRunning, p.instancesStopped, p.region)
 }

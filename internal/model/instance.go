@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (C) Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// SPDX-License-Identifier: Apache-2.0
+
 package model
 
 import (
@@ -27,11 +30,11 @@ func (i *Instance) GetSSHCommand(username string) string {
 	if ip == "" {
 		ip = i.PrivateIP
 	}
-	
+
 	if ip == "" {
 		return "No IP address available for SSH connection"
 	}
-	
+
 	return fmt.Sprintf("ssh %s@%s", username, ip)
 }
 

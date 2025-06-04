@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (C) Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// SPDX-License-Identifier: Apache-2.0
+
 package cmd
 
 import (
@@ -29,29 +32,29 @@ func NewRootCommand(log *slog.Logger) *cobra.Command {
 		Short: "AWS EC2 Terminal UI Manager",
 		Long: `e2c is a terminal-based UI application for managing AWS EC2 instances,
 inspired by k9s for Kubernetes and e1s for ECS.
-		
+
 It provides a simple, intuitive interface for managing EC2 instances
 across multiple regions.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Configure logging if requested via flags
 			if logFormat != "" || logLevel != "" {
 				logConfig := logger.NewConfig()
-				
+
 				// Set format if specified
 				if logFormat != "" {
 					logConfig.Format = logger.ParseFormat(logFormat)
 				}
-				
+
 				// Set level if specified
 				if logLevel != "" {
 					logConfig.Level = logger.ParseLevel(logLevel)
 				}
-				
+
 				// Create and set the new logger
 				log = logger.New(logConfig)
 				logger.SetAsDefault(log)
 			}
-			
+
 			// Load configuration
 			cfg, err := config.LoadConfig(log)
 			if err != nil {

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (C) Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// SPDX-License-Identifier: Apache-2.0
+
 package ui
 
 import (
@@ -6,7 +9,7 @@ import (
 	"time"
 
 	"github.com/rivo/tview"
-	
+
 	"github.com/nlamirault/e2c/internal/color"
 )
 
@@ -17,7 +20,7 @@ type StatusBar struct {
 	status   string
 	region   string
 	lastSync time.Time
-	mode     string  // Current UI mode
+	mode     string // Current UI mode
 }
 
 // NewStatusBar creates a new status bar
@@ -105,19 +108,19 @@ func (b *StatusBar) update() {
 
 	// Build status text with all components
 	components := []string{status}
-	
+
 	if regionInfo != "" {
 		components = append(components, regionInfo)
 	}
-	
+
 	if modeInfo != "" {
 		components = append(components, modeInfo)
 	}
-	
+
 	if lastSyncInfo != "" {
 		components = append(components, lastSyncInfo)
 	}
-	
+
 	// Join all components with a separator
 	text := " " + strings.Join(components, " | ") + " "
 

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (C) Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// SPDX-License-Identifier: Apache-2.0
+
 package ui
 
 import (
@@ -37,10 +40,10 @@ type UI struct {
 // NewUI creates a new UI instance
 func NewUI(log *slog.Logger, ec2Client *aws.EC2Client, cfg *config.Config) *UI {
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	// Initialize colors
 	color.InitializeColors()
-	
+
 	ui := &UI{
 		app:       tview.NewApplication(),
 		pages:     tview.NewPages(),
@@ -56,7 +59,7 @@ func NewUI(log *slog.Logger, ec2Client *aws.EC2Client, cfg *config.Config) *UI {
 	ui.overviewPanel = NewOverviewPanel(ui)
 	ui.statusBar = NewStatusBar(ui)
 	ui.helpView = NewHelpView()
-	
+
 	// Set initial region in status bar
 	ui.statusBar.SetRegion(ec2Client.GetRegion())
 
@@ -103,8 +106,8 @@ func (ui *UI) Stop() {
 func (ui *UI) setupLayout() {
 	// Create main layout
 	grid := tview.NewGrid().
-		SetRows(5, 0, 1, 1).      // Overview panel, main content, status bar, help
-		SetColumns(0).            // Full width
+		SetRows(5, 0, 1, 1). // Overview panel, main content, status bar, help
+		SetColumns(0).       // Full width
 		SetBorders(false)
 
 	// Set instance table title with theme colors

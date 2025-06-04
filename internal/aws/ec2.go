@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (C) Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// SPDX-License-Identifier: Apache-2.0
+
 package aws
 
 import (
@@ -32,7 +35,7 @@ func (c *EC2Client) GetRegion() string {
 
 // NewEC2Client creates a new EC2 client
 func NewEC2Client(log *slog.Logger, region, profile string) (*EC2Client, error) {
-	log.Info("Creating new EC2 client", 
+	log.Info("Creating new EC2 client",
 		"region", region,
 		"profile", profile,
 	)
@@ -223,7 +226,7 @@ func convertToModelInstance(instance types.Instance, region string) model.Instan
 		key := aws.ToString(tag.Key)
 		value := aws.ToString(tag.Value)
 		i.Tags[key] = value
-		
+
 		// Set name separately for backwards compatibility
 		if key == "Name" {
 			i.Name = value

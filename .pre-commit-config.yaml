@@ -48,7 +48,7 @@ repos:
   hooks:
   - id: insert-license
     stages: [pre-commit]
-    files: (Makefile|\.mk|\.yaml|\.yml|\.sh|\.go)
+    files: (Makefile|\.mk|\.yaml|\.yml|\.sh)
     args:
     - --license-filepath
     - hack/config/LICENSE
@@ -60,8 +60,8 @@ repos:
     args:
     - --license-filepath
     - hack/config/LICENSE
-    # - --comment-style
-    # - "{{/*||*/}}"
+    - --comment-style
+    - "//"
 - repo: https://github.com/jumanjihouse/pre-commit-hooks
   rev: 3.0.0
   hooks:
