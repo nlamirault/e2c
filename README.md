@@ -2,7 +2,7 @@
 
 `e2c` is a terminal-based UI application for managing AWS EC2 instances, inspired by [k9s](https://github.com/derailed/k9s) for Kubernetes and [e1s](https://github.com/keidarcy/e1s/) for ECS.
 
-![e2c screenshot](docs/images/screenshot.png)
+![e2c screenshot](assets/main-view.png)
 
 ## Features
 
