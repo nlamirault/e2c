@@ -78,7 +78,7 @@ nfpms:
 
 brews:
   - repository:
-      owner: e2c
+      owner: nlamirault
       name: homebrew-tap
       token: "{{ .Env.GH_PAT }}"
     directory: Formula
