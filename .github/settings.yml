@@ -23,7 +23,7 @@
 repository:
   # See https://docs.github.com/en/rest/reference/repos#update-a-repository for all available settings.
   name: e2c
-  description: A terminal-based UI application for managing AWS EC2 instances, inspired by [k9s](https://github.com/derailed/k9s) for Kubernetes and [e1s](https://github.com/keidarcy/e1s/) for ECS
+  description: A terminal-based UI application for managing AWS EC2 instances.
   homepage: https://github.com/nlamirault/e2c
   topics: aws, ec2, tui, golang,
   private: false
