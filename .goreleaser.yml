@@ -21,6 +21,9 @@ builds:
     env:
       - CGO_ENABLED=0
 
+checksum:
+  name_template: '{{ .ProjectName }}_{{ .Version }}_checksums.txt'
+
 # Changelog configuration (will be in the github release).
 changelog:
   sort: asc
@@ -29,6 +32,16 @@ changelog:
       - "^docs:"
       - "^test:"
       - '^ci:'
+
+
+# A footer to add to all releases.
+# release:
+#   footer: >-
+
+#     ---
+
+#     Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
+
 
 universal_binaries:
   - replace: true
@@ -39,18 +52,18 @@ source:
 
 # Creates archives for each target.
 archives:
-  - formats: [ 'tar.gz' ]
-    # this name template makes the OS and Arch compatible with the results of `uname`.
-    name_template: >-
-      {{ .ProjectName }}_
-      {{- title .Os }}_
-      {{- if eq .Arch "amd64" }}x86_64
-      {{- else if eq .Arch "386" }}i386
-      {{- else }}{{ .Arch }}{{ end }}
-    # use zip for windows archives
-    format_overrides:
-      - goos: windows
-        formats: [ 'zip' ]
+  # - formats: [ 'tar.gz' ]
+  #   # this name template makes the OS and Arch compatible with the results of `uname`.
+  #   name_template: >-
+  #     {{ .ProjectName }}_
+  #     {{- title .Os }}_
+  #     {{- if eq .Arch "amd64" }}x86_64
+  #     {{- else if eq .Arch "386" }}i386
+  #     {{- else }}{{ .Arch }}{{ end }}
+  #   # use zip for windows archives
+  #   format_overrides:
+  #     - goos: windows
+  #       formats: [ 'zip' ]
   - formats: binary
     name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}"
     ids:
@@ -90,14 +103,3 @@ brews:
     homepage: https://github.com/nlamirault/e2c
     description: e2c is AWS EC2 Terminal UI Manager. Inspired by k9s and e1s.
     license: Apache v2
-
-checksum:
-  name_template: '{{ .ProjectName }}_{{ .Version }}_checksums.txt'
-
-# A footer to add to all releases.
-# release:
-#   footer: >-
-
-#     ---
-
-#     Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
