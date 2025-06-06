@@ -96,14 +96,3 @@ checksum:
 #     ---
 
 #     Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
-
-brews:
-  - name: e2c
-    homepage: https://github.com/nlamirault/e2c
-    description: e2c is AWS EC2 Terminal UI Manager. Inspired by k9s and e1s.
-    tap:
-      owner: nlamirault
-      name: homebrew-tap
-
-checksum:
-  name_template: '{{ .ProjectName }}_{{ .Version }}_checksums.txt'
