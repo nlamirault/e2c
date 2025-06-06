@@ -119,6 +119,29 @@ REPO            PREDICATE_TYPE                  WORKFLOW
 nlamirault/e2c  https://slsa.dev/provenance/v1  .github/workflows/release.yml@refs/tags/v0.1.2
 ```
 
+## SBOM
+
+```
+$ trivy sbom ~/Downloads/e2c.exe_0.1.3_windows_arm64.sbom.json
+2025-06-06T17:39:52+02:00       INFO    [vuln] Vulnerability scanning is enabled
+2025-06-06T17:39:52+02:00       INFO    Detected SBOM format    format="spdx-json"
+2025-06-06T17:39:52+02:00       INFO    Number of language-specific files       num=1
+2025-06-06T17:39:52+02:00       INFO    [gobinary] Detecting vulnerabilities...
+2025-06-06T17:39:52+02:00       WARN    Using severities from other vendors for some vulnerabilities. Read https://aquasecurity.github.io/trivy/v0.55/docs/scanner/vulnerability#severity-selection for details.
+
+ (gobinary)
+
+Total: 1 (UNKNOWN: 0, LOW: 0, MEDIUM: 1, HIGH: 0, CRITICAL: 0)
+
+┌─────────┬────────────────┬──────────┬────────┬───────────────────┬────────────────┬──────────────────────────────────────────────────────────┐
+│ Library │ Vulnerability  │ Severity │ Status │ Installed Version │ Fixed Version  │                          Title                           │
+├─────────┼────────────────┼──────────┼────────┼───────────────────┼────────────────┼──────────────────────────────────────────────────────────┤
+│ stdlib  │ CVE-2025-22871 │ MEDIUM   │ fixed  │ 1.22.12           │ 1.23.8, 1.24.2 │ net/http: Request smuggling due to acceptance of invalid │
+│         │                │          │        │                   │                │ chunked data in net/http...                              │
+│         │                │          │        │                   │                │ https://avd.aquasec.com/nvd/cve-2025-22871               │
+└─────────┴────────────────┴──────────┴────────┴───────────────────┴────────────────┴──────────────────────────────────────────────────────────┘
+```
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
