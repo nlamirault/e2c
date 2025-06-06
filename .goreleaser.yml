@@ -10,7 +10,7 @@ before:
 builds:
   - id: e2c
     binary: e2c
-    main: cmd/e2c
+    dir: cmd/e2c
     goos:
       - darwin
       - linux
