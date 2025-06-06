@@ -1,0 +1,45 @@
+---
+before:
+  hooks:
+    - go mod download
+builds:
+  - binary: e2c
+    dir: cmd/e2c
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+
+release:
+  prerelease: auto
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^ci:'
+      - '^test:'
+      - '^deps:'
+      - '^bump:'
+      - '^Merge pull request'
+      - '^Merge branch'
+
+universal_binaries:
+  - replace: true
+
+brews:
+  - name: e2c
+    homepage: https://github.com/nlamirault/e2c
+    description: e2c is AWS EC2 Terminal UI Manager. Inspired by k9s and e1s.
+    tap:
+      owner: nlamirault
+      name: homebrew-tap
+
+checksum:
+  name_template: '{{ .ProjectName }}_{{ .Version }}_checksums.txt'
