@@ -67,7 +67,7 @@ jobs:
     permissions: read-all
     steps:
       - name: Install the verifier
-        uses: slsa-framework/slsa-verifier/actions/installer@v2.4.0
+        uses: slsa-framework/slsa-verifier/actions/installer@v2.7.0
 
       - name: Download assets
         env:
@@ -76,8 +76,8 @@ jobs:
         run: |
           set -euo pipefail
           gh -R "$GITHUB_REPOSITORY" release download "$GITHUB_REF_NAME" -p "*.tar.gz"
-          gh -R "$GITHUB_REPOSITORY" release download "$GITHUB_REF_NAME" -p "*.zip"
           gh -R "$GITHUB_REPOSITORY" release download "$GITHUB_REF_NAME" -p "$PROVENANCE"
+
       - name: Verify assets
         env:
           CHECKSUMS: ${{ needs.goreleaser.outputs.hashes }}
