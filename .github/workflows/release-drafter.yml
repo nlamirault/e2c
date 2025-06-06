@@ -1,0 +1,24 @@
+---
+name: Project / Release Drafter
+
+on: # yamllint disable-line rule:truthy
+  push:
+    # branches to consider in the event; optional, defaults to all
+    branches:
+    - main
+
+jobs:
+  update_release_draft:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Monitor Actions
+      uses: GitHubSecurityLab/actions-permissions/monitor@v1
+      with:
+        config: ${{ vars.PERMISSIONS_CONFIG }}
+    # Drafts your next Release notes as Pull Requests are merged into "master"
+    - uses: release-drafter/release-drafter@v6
+      # (Optional) specify config name to use, relative to .github/. Default: release-drafter.yml
+      # with:
+      # config-name: my-config.yml
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
