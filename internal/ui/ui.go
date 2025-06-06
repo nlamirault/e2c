@@ -15,8 +15,8 @@ import (
 
 	"github.com/nlamirault/e2c/internal/aws"
 	"github.com/nlamirault/e2c/internal/color"
+	"github.com/nlamirault/e2c/internal/config"
 	"github.com/nlamirault/e2c/internal/model"
-	"github.com/nlamirault/e2c/pkg/config"
 )
 
 // UI manages the terminal UI for e2c

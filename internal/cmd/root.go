@@ -11,10 +11,10 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/nlamirault/e2c/internal/aws"
+	"github.com/nlamirault/e2c/internal/config"
 	"github.com/nlamirault/e2c/internal/logger"
 	"github.com/nlamirault/e2c/internal/ui"
 	"github.com/nlamirault/e2c/internal/version"
-	"github.com/nlamirault/e2c/pkg/config"
 )
 
 // NewRootCommand creates the root command for e2c
