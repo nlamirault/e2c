@@ -126,10 +126,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PROJECT_NAME: ${{ needs.goreleaser.outputs.project-name }}
-          VERSION: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          gh release download "${GITHUB_REF_NAME}" -p "${PROJECT_NAME}_*" -D ./artifacts
+          gh -R "$GITHUB_REPOSITORY" release download "${GITHUB_REF_NAME}" -p "${PROJECT_NAME}_*" -D ./artifacts
 
       - name: Generate SBOM attestation
         uses: actions/attest-sbom@v2
@@ -147,10 +146,11 @@ jobs:
       - name: Download assets
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROJECT_NAME: ${{ needs.goreleaser.outputs.project-name }}
           PROVENANCE: "${{ needs.binary-provenance.outputs.provenance-name }}"
         run: |
           set -euo pipefail
-          gh -R "$GITHUB_REPOSITORY" release download "${GITHUB_REF_NAME}" -p "${PROJECT_NAME}_${VERSION}_*"
+          gh -R "$GITHUB_REPOSITORY" release download "${GITHUB_REF_NAME}" -p "${PROJECT_NAME}_*"
           gh -R "$GITHUB_REPOSITORY" release download "${GITHUB_REF_NAME}" -p "${PROVENANCE}"
 
       - name: Verify assets
