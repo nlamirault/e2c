@@ -30,6 +30,7 @@ jobs:
           go-version-file: go.mod
 
       - name: Release
+        id: run-goreleaser
         uses: goreleaser/goreleaser-action@v5
         with:
           distribution: goreleaser
@@ -41,12 +42,11 @@ jobs:
           GH_PAT: ${{ secrets.PUBLISHER_TOKEN }}
 
       - name: Generate binary hashes
-        id: binary
+        id: hash
         env:
-          ARTIFACTS: "${{ steps.goreleaser.outputs.artifacts }}"
+          ARTIFACTS: "${{ steps.run-goreleaser.outputs.artifacts }}"
         run: |
           set -euo pipefail
-
           checksum_file=$(echo "$ARTIFACTS" | jq -r '.[] | select (.type=="Checksum") | .path')
           echo "hashes=$(cat $checksum_file | base64 -w0)" >> "$GITHUB_OUTPUT"
 
