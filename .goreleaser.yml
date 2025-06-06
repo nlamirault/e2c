@@ -22,7 +22,7 @@ builds:
       - CGO_ENABLED=0
 
 checksum:
-  name_template: '{{ .ProjectName }}_{{ .Version }}_checksums.txt'
+  name_template: '{{ .ProjectName }}_v{{ .Version }}_checksums.txt'
 
 # Changelog configuration (will be in the github release).
 changelog:
@@ -65,7 +65,7 @@ archives:
   #     - goos: windows
   #       formats: [ 'zip' ]
   - formats: binary
-    name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}"
+    name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}_v{{- .Version }}"
     ids:
       - e2c
 
