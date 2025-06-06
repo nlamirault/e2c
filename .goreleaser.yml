@@ -26,11 +26,22 @@ checksum:
 
 # Changelog configuration (will be in the github release).
 changelog:
-  use: github-native
+  use: github #-native
   sort: asc
+  groups:
+    - title: "✨ Features"
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: "🐛 Bug fixes"
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: "📚 Documentation"
+      regexp: '^.*?doc(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: "🌱 Others"
+      order: 999
   filters:
     exclude:
-      - "^docs:"
       - "^test:"
       - '^ci:'
 
@@ -81,7 +92,7 @@ archives:
 # SBOMs for the archives.
 sboms:
   - id: spdx
-    artifacts: archive
+    artifacts: binary
 
 # # Sign binaries with cosign.
 # signs:

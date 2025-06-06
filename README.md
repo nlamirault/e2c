@@ -100,6 +100,26 @@ Note: Command line flags take precedence over environment variables.
 - AWS credentials configured
 - Appropriate IAM permissions to list and manage EC2 instances
 
+## SLSA
+
+All _artifacts_ provided by this repository meet [SLSA L3](https://slsa.dev/spec/v1.0/levels#build-l3)
+
+### Verify SLSA provenance
+
+Using the [Github CLI]():
+
+```shell
+$ gh attestation verify --owner nlamirault e2c_darwin_amd64_v0.1.2
+gh attestation verify oci://ghcr.io/portefaix/charts/fake:0.1.0 --repo portefaix/portefaix-hub
+Loaded digest sha256:84440dd6e696ed153a43490bdfdf9190d640d041fb4201f326578a4be829e811 for oci://ghcr.io/portefaix/charts/fake:0.1.0
+Loaded 1 attestation from GitHub API
+✓ Verification succeeded!
+
+sha256:84440dd6e696ed153a43490bdfdf9190d640d041fb4201f326578a4be829e811 was attested by:
+REPO                     PREDICATE_TYPE                  WORKFLOW
+portefaix/portefaix-hub  https://slsa.dev/provenance/v1  .github/workflows/chart-release-manual.yml@refs/heads/feat/sign
+```
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
