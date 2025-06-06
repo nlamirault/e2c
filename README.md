@@ -109,15 +109,14 @@ All _artifacts_ provided by this repository meet [SLSA L3](https://slsa.dev/spec
 Using the [Github CLI]():
 
 ```shell
-$ gh attestation verify --owner nlamirault e2c_darwin_amd64_v0.1.2
-gh attestation verify oci://ghcr.io/portefaix/charts/fake:0.1.0 --repo portefaix/portefaix-hub
-Loaded digest sha256:84440dd6e696ed153a43490bdfdf9190d640d041fb4201f326578a4be829e811 for oci://ghcr.io/portefaix/charts/fake:0.1.0
+$ gh attestation verify --owner nlamirault e2c_darwin_arm64_v0.1.2
+Loaded digest sha256:da91348beede82d764792e7166e03e3dfe29eb935b5bcb7c6dca337877fac5c8 for file://e2c_darwin_arm64_v0.1.2
 Loaded 1 attestation from GitHub API
 ✓ Verification succeeded!
 
-sha256:84440dd6e696ed153a43490bdfdf9190d640d041fb4201f326578a4be829e811 was attested by:
-REPO                     PREDICATE_TYPE                  WORKFLOW
-portefaix/portefaix-hub  https://slsa.dev/provenance/v1  .github/workflows/chart-release-manual.yml@refs/heads/feat/sign
+sha256:da91348beede82d764792e7166e03e3dfe29eb935b5bcb7c6dca337877fac5c8 was attested by:
+REPO            PREDICATE_TYPE                  WORKFLOW
+nlamirault/e2c  https://slsa.dev/provenance/v1  .github/workflows/release.yml@refs/tags/v0.1.2
 ```
 
 ## Contributing
