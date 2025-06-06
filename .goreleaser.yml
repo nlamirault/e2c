@@ -26,6 +26,7 @@ checksum:
 
 # Changelog configuration (will be in the github release).
 changelog:
+  use: github-native
   sort: asc
   filters:
     exclude:
@@ -33,6 +34,9 @@ changelog:
       - "^test:"
       - '^ci:'
 
+release:
+  draft: true
+  replace_existing_draft: true
 
 # A footer to add to all releases.
 # release:
@@ -42,13 +46,9 @@ changelog:
 
 #     Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
 
-
-universal_binaries:
-  - replace: true
-
 # Enables source archives.
-source:
-  enabled: true
+# source:
+#   enabled: true
 
 # Creates archives for each target.
 archives:
@@ -70,17 +70,18 @@ archives:
       - e2c
 
 # Creates Linux packages.
-nfpms:
-  - file_name_template: "{{ .ConventionalFileName }}"
-    maintainer: Nicolas Lamirault <nicolas.lamirault@gmail.com>
-    formats:
-      - deb
-      - apk
-      - rpm
+# nfpms:
+#   - file_name_template: "{{ .ConventionalFileName }}"
+#     maintainer: Nicolas Lamirault <nicolas.lamirault@gmail.com>
+#     formats:
+#       - deb
+#       - apk
+#       - rpm
 
-# # SBOMs for the archives.
-# sboms:
-#   - artifacts: archive
+# SBOMs for the archives.
+sboms:
+  - id: spdx
+    artifacts: archive
 
 # # Sign binaries with cosign.
 # signs:

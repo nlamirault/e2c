@@ -14,11 +14,17 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       hashes: ${{ steps.hash.outputs.hashes }}
+      project-name: ${{ steps.hash.outputs.project-name }}
     # https://goreleaser.com/ci/actions/#token-permissions
     permissions:
       contents: write
       packages: write
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.12.0
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -28,6 +34,8 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+
+      # - uses: anchore/sbom-action/download-syft@v0.17.9
 
       - name: Release
         id: run-goreleaser
@@ -49,6 +57,7 @@ jobs:
           set -euo pipefail
           checksum_file=$(echo "$ARTIFACTS" | jq -r '.[] | select (.type=="Checksum") | .path')
           echo "hashes=$(cat $checksum_file | base64 -w0)" >> "$GITHUB_OUTPUT"
+          echo "project-name=$(echo "${GITHUB_REPOSITORY}" | cut -d'/' -f2)" >> "${GITHUB_OUTPUT}"
 
   binary-provenance:
     needs: [goreleaser]
@@ -60,6 +69,47 @@ jobs:
     with:
       base64-subjects: "${{ needs.goreleaser.outputs.hashes }}"
       upload-assets: true # upload to a new release
+
+  attestation:
+    needs: [ goreleaser ]
+    permissions:
+      actions: read # To read the workflow path.
+      id-token: write # To sign the provenance.
+      attestations: write # To upload attestations.
+      contents: write # To download assets from draft release.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.10.2
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Download artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROJECT_NAME: ${{ needs.goreleaser.outputs.project-name }}
+          VERSION: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          gh release download "${VERSION}" -p "${PROJECT_NAME}_${VERSION}_*" -D ./artifacts
+
+      - name: Generate artifacts attestation
+        id: gen-att
+        uses: actions/attest-build-provenance@v2.1.0
+        with:
+          subject-path: "${{ github.workspace }}/artifacts/*"
+      #
+      # - name: Upload attestation
+      #   uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191 # v2.0.8
+      #   with:
+      #     draft: true
+      #     tag_name: ${{ github.ref_name }}
+      #     files: |
+      #       ${{ steps.gen-att.outputs.bundle-path }}
 
   verification-with-slsa-verifier:
     needs: [goreleaser, binary-provenance]
