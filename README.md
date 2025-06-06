@@ -121,7 +121,9 @@ nlamirault/e2c  https://slsa.dev/provenance/v1  .github/workflows/release.yml@re
 
 ## SBOM
 
-```
+You could use [trivy](https://trivy.dev) to read SBOM file:
+
+```shell
 $ trivy sbom ~/Downloads/e2c.exe_0.1.3_windows_arm64.sbom.json
 2025-06-06T17:39:52+02:00       INFO    [vuln] Vulnerability scanning is enabled
 2025-06-06T17:39:52+02:00       INFO    Detected SBOM format    format="spdx-json"
@@ -140,6 +142,14 @@ Total: 1 (UNKNOWN: 0, LOW: 0, MEDIUM: 1, HIGH: 0, CRITICAL: 0)
 │         │                │          │        │                   │                │ chunked data in net/http...                              │
 │         │                │          │        │                   │                │ https://avd.aquasec.com/nvd/cve-2025-22871               │
 └─────────┴────────────────┴──────────┴────────┴───────────────────┴────────────────┴──────────────────────────────────────────────────────────┘
+```
+
+or with [grype](https://github.com/anchore/grype):
+
+```shell
+$ cat ./e2c.exe_0.1.3_windows_arm64.sbom.json | grype
+NAME    INSTALLED  FIXED-IN        TYPE       VULNERABILITY   SEVERITY
+stdlib  go1.22.12  1.23.8, 1.24.2  go-module  CVE-2025-22871  Critical
 ```
 
 ## Contributing
