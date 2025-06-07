@@ -60,6 +60,11 @@ jobs:
           echo "hashes=$(cat $checksum_file | base64 -w0)" >> "$GITHUB_OUTPUT"
           echo "project-name=$(echo "${GITHUB_REPOSITORY}" | cut -d'/' -f2)" >> "${GITHUB_OUTPUT}"
 
+      # After GoReleaser runs, attest all the files in ./dist/checksums.txt:
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-checksums: ./dist/checksums.txt
+
   binary-provenance:
     needs: [goreleaser]
     permissions:
@@ -71,38 +76,38 @@ jobs:
       base64-subjects: "${{ needs.goreleaser.outputs.hashes }}"
       upload-assets: true # upload to a new release
 
-  attestation-build-provenance:
-    needs: [ goreleaser ]
-    permissions:
-      actions: read # To read the workflow path.
-      id-token: write # To sign the provenance.
-      attestations: write # To upload attestations.
-      contents: write # To download assets from draft release.
-    runs-on: ubuntu-latest
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@v2.10.2
-        with:
-          egress-policy: audit
+  # attestation-build-provenance:
+  #   needs: [ goreleaser ]
+  #   permissions:
+  #     actions: read # To read the workflow path.
+  #     id-token: write # To sign the provenance.
+  #     attestations: write # To upload attestations.
+  #     contents: write # To download assets from draft release.
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Harden Runner
+  #       uses: step-security/harden-runner@v2.10.2
+  #       with:
+  #         egress-policy: audit
 
-      - uses: actions/checkout@v4.2.2
-        with:
-          fetch-depth: 0
+  #     - uses: actions/checkout@v4.2.2
+  #       with:
+  #         fetch-depth: 0
 
-      - name: Download artifacts
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PROJECT_NAME: ${{ needs.goreleaser.outputs.project-name }}
-          VERSION: ${{ github.ref_name }}
-        run: |
-          set -euo pipefail
-          gh release download "${GITHUB_REF_NAME}" -p "${PROJECT_NAME}_*" -D ./artifacts
+  #     - name: Download artifacts
+  #       env:
+  #         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #         PROJECT_NAME: ${{ needs.goreleaser.outputs.project-name }}
+  #         VERSION: ${{ github.ref_name }}
+  #       run: |
+  #         set -euo pipefail
+  #         gh release download "${GITHUB_REF_NAME}" -p "${PROJECT_NAME}_*" -D ./artifacts
 
-      - name: Generate artifacts attestation
-        id: gen-att
-        uses: actions/attest-build-provenance@v2.1.0
-        with:
-          subject-path: "${{ github.workspace }}/artifacts/*"
+  #     - name: Generate artifacts attestation
+  #       id: gen-att
+  #       uses: actions/attest-build-provenance@v2.1.0
+  #       with:
+  #         subject-path: "${{ github.workspace }}/artifacts/*"
 
   attestation-sbom:
     needs: [ goreleaser ]
