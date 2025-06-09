@@ -7,6 +7,7 @@ before:
   hooks:
     - go mod tidy
 
+# https://goreleaser.com/customization/build
 builds:
   - id: e2c
     binary: e2c
@@ -21,10 +22,12 @@ builds:
     env:
       - CGO_ENABLED=0
 
-checksum:
-  name_template: '{{ .ProjectName }}_v{{ .Version }}_checksums.txt'
+checksum: # https://goreleaser.com/customization/checksum/
+  name_template: "checksums.txt"
+  algorithm: sha256
 
 # Changelog configuration (will be in the github release).
+# https://goreleaser.com/customization/changelog/
 changelog:
   use: github-native
   sort: asc
@@ -45,6 +48,7 @@ changelog:
       - "^test:"
       - '^ci:'
 
+# https://goreleaser.com/customization/release/
 release:
   draft: true
   replace_existing_draft: true
@@ -62,6 +66,7 @@ release:
 #   enabled: true
 
 # Creates archives for each target.
+# https://goreleaser.com/customization/archive/
 archives:
   # - formats: [ 'tar.gz' ]
   #   # this name template makes the OS and Arch compatible with the results of `uname`.
@@ -89,12 +94,17 @@ archives:
 #       - apk
 #       - rpm
 
-# SBOMs for the archives.
+# # creates SBOMs of all archives and the source tarball using syft
+# https://goreleaser.com/customization/sbom
 sboms:
   - id: spdx
     artifacts: binary
+  # - id: spdx
+  #   artifacts: archive
 
-# # Sign binaries with cosign.
+# signs the checksum file
+# all files (including the sboms) are included in the checksum, so we don't need to sign each one if we don't want to
+# https://goreleaser.com/customization/sign
 # signs:
 #   - cmd: cosign
 #     certificate: "${artifact}.pem"
@@ -103,8 +113,9 @@ sboms:
 #       - "--output-certificate=${certificate}"
 #       - "--output-signature=${signature}"
 #       - "${artifact}"
-#       - "--yes"
+#       - "--yes" # needed on cosign 2.0.0+
 #     artifacts: checksum
+#     output: true
 
 brews:
   - repository:
