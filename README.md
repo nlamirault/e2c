@@ -1,7 +1,7 @@
 # e2c - AWS EC2 Terminal UI Manager
 
 [![GitHub Release](https://img.shields.io/github/release/nlamirault/e2c.svg?logo=github)](https://github.com/nlamirault/e2c/releases)
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/nlamirault/e2c/blob/main/LICENSE)]
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/nlamirault/e2c/blob/main/LICENSE)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/nlamirault/e2c/badge)](https://scorecard.dev/viewer/?uri=github.com/nlamirault/e2c)
 
 `e2c` is a terminal-based UI application for managing AWS EC2 instances, inspired by [k9s](https://github.com/derailed/k9s) for Kubernetes and [e1s](https://github.com/keidarcy/e1s/) for ECS.
