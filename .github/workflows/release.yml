@@ -19,6 +19,7 @@ jobs:
     permissions:
       contents: write
       packages: write
+      attestations: write
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@v2.12.0
