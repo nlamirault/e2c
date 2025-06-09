@@ -116,36 +116,38 @@ jobs:
   #       with:
   #         subject-path: "${{ github.workspace }}/artifacts/*"
 
-  attestation-sbom:
-    needs: [ goreleaser ]
-    permissions:
-      actions: read # To read the workflow path.
-      id-token: write # To sign the provenance.
-      attestations: write # To upload attestations.
-      contents: write # To download assets from draft release.
-    runs-on: ubuntu-latest
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@v2.10.2
-        with:
-          egress-policy: audit
+  # attestation-sbom:
+  #   needs: [ goreleaser ]
+  #   permissions:
+  #     actions: read # To read the workflow path.
+  #     id-token: write # To sign the provenance.
+  #     attestations: write # To upload attestations.
+  #     contents: write # To download assets from draft release.
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Harden Runner
+  #       uses: step-security/harden-runner@v2.10.2
+  #       with:
+  #         egress-policy: audit
 
-      - uses: actions/checkout@v4.2.2
-        with:
-          fetch-depth: 0
+  #     - uses: actions/checkout@v4.2.2
+  #       with:
+  #         fetch-depth: 0
 
-      - name: Download artifacts
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PROJECT_NAME: ${{ needs.goreleaser.outputs.project-name }}
-        run: |
-          set -euo pipefail
-          gh -R "$GITHUB_REPOSITORY" release download "${GITHUB_REF_NAME}" -p "${PROJECT_NAME}_*" -D ./artifacts
+  #     - name: Download artifacts
+  #       env:
+  #         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #         PROJECT_NAME: ${{ needs.goreleaser.outputs.project-name }}
+  #       run: |
+  #         set -euo pipefail
+  #         echo "Download artifacts from ${GITHUB_REPOSITORY} for ${GITHUB_REF_NAME}"
+  #         gh -R "${GITHUB_REPOSITORY}" release download "${GITHUB_REF_NAME}" -p "${PROJECT_NAME}_*" -D ./artifacts
+  #         ls -alF ./artifacts
 
-      - name: Generate SBOM attestation
-        uses: actions/attest-sbom@v2
-        with:
-          subject-path: "${{ github.workspace }}/artifacts/*"
+  #     - name: Generate SBOM attestation
+  #       uses: actions/attest-sbom@v2
+  #       with:
+  #         subject-path: "${{ github.workspace }}/artifacts/*"
 
   verification-with-slsa-verifier:
     needs: [goreleaser, binary-provenance]
@@ -162,8 +164,10 @@ jobs:
           PROVENANCE: "${{ needs.binary-provenance.outputs.provenance-name }}"
         run: |
           set -euo pipefail
-          gh -R "$GITHUB_REPOSITORY" release download "${GITHUB_REF_NAME}" -p "${PROJECT_NAME}_*"
-          gh -R "$GITHUB_REPOSITORY" release download "${GITHUB_REF_NAME}" -p "${PROVENANCE}"
+          echo "Download artifacts from ${GITHUB_REPOSITORY} for ${GITHUB_REF_NAME}"
+          gh -R "${GITHUB_REPOSITORY}" release download "${GITHUB_REF_NAME}" -p "${PROJECT_NAME}_*"
+          gh -R "${GITHUB_REPOSITORY}" release download "${GITHUB_REF_NAME}" -p "${PROVENANCE}"
+          ls -alF ./artifacts
 
       - name: Verify assets
         env:
@@ -171,15 +175,15 @@ jobs:
           PROVENANCE: "${{ needs.binary-provenance.outputs.provenance-name }}"
         run: |
           set -euo pipefail
-          checksums=$(echo "$CHECKSUMS" | base64 -d)
+          checksums=$(echo "${CHECKSUMS}" | base64 -d)
           while read -r line; do
-              fn=$(echo $line | cut -d ' ' -f2)
-              echo "Verifying $fn"
+              fn=$(echo ${line} | cut -d ' ' -f2)
+              echo "Verifying ${fn}"
               slsa-verifier verify-artifact --provenance-path "${PROVENANCE}" \
                                             --source-uri "github.com/${GITHUB_REPOSITORY}" \
                                             --source-tag "${GITHUB_REF_NAME}" \
                                             "${fn}"
-          done <<<"$checksums"
+          done <<<"${checksums}"
 
   # verification-with-cosign:
   #   needs: [goreleaser, image-provenance]
