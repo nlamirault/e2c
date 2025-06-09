@@ -1,4 +1,6 @@
 ---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+# docs: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions
 name: Release
 
 on: # yamllint disable-line rule:truthy
@@ -17,9 +19,10 @@ jobs:
       project-name: ${{ steps.hash.outputs.project-name }}
     # https://goreleaser.com/ci/actions/#token-permissions
     permissions:
-      contents: write
-      packages: write
-      attestations: write
+      contents: write # needed to write releases
+      id-token: write # needed for keyless signing
+      packages: write # needed for ghcr access
+      attestations: write # needed for provenance
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@v2.12.0
@@ -35,6 +38,9 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+
+      # - name: Install Cosign
+      #   uses: sigstore/cosign-installer@v3
 
       - name: Download Syft (to generate SBOMs)
         uses: anchore/sbom-action/download-syft@v0
