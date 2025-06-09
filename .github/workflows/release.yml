@@ -167,7 +167,6 @@ jobs:
           echo "Download artifacts from ${GITHUB_REPOSITORY} for ${GITHUB_REF_NAME}"
           gh -R "${GITHUB_REPOSITORY}" release download "${GITHUB_REF_NAME}" -p "${PROJECT_NAME}_*"
           gh -R "${GITHUB_REPOSITORY}" release download "${GITHUB_REF_NAME}" -p "${PROVENANCE}"
-          ls -alF ./artifacts
 
       - name: Verify assets
         env:
