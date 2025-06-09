@@ -1,16 +1,38 @@
+# SPDX-FileCopyrightText: Copyright (C) Nicolas Lamirault <nicolas.lamirault@gmail.com>
+# SPDX-License-Identifier: Apache-2.0
+
+---
 version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: daily
+    labels:
+      - dependency/github
+      - kind/maintenance
+      - lifecycle/active
+      - priority/low
+      - status/available
 
   - package-ecosystem: docker
     directory: /
     schedule:
       interval: daily
+    labels:
+      - dependency/docker
+      - kind/maintenance
+      - lifecycle/active
+      - priority/low
+      - status/available
 
   - package-ecosystem: gomod
     directory: /
     schedule:
       interval: daily
+    labels:
+      - dependency/go
+      - kind/maintenance
+      - lifecycle/active
+      - priority/low
+      - status/available

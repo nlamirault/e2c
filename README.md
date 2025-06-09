@@ -11,14 +11,12 @@
 
 ## Features
 
-- Terminal-based UI for managing EC2 instances
-- View instance details, status, and resource utilization
-- Start, stop, reboot, and terminate instances
-- Connect to instances via SSH
-- Filter and search for instances across multiple regions
-- Monitor resource metrics
-- View instance logs and console output
-- Support for multiple AWS profiles and regions
+- 🖥️ Terminal-based UI for managing EC2 instances
+- 🔄 View instance details, status, and resource utilization
+- ⚡ Start, stop, reboot, and terminate instances
+- 🔍 Filter and search for instances across multiple regions
+- 🌍 Monitor resource metrics
+- 🔐 Support for multiple AWS profiles and regions
 
 ## Installation
 
@@ -46,8 +44,6 @@ e2c --help
 ```
 
 ## Keyboard Shortcuts
-
-## Key Shortcuts
 
 | Key   | Action                               |
 | ----- | ------------------------------------ |
