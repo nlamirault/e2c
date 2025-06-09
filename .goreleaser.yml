@@ -1,4 +1,5 @@
 ---
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 version: 2
 
 project_name: e2c
@@ -50,16 +51,11 @@ changelog:
 
 # https://goreleaser.com/customization/release/
 release:
-  draft: true
+  # draft: true
   replace_existing_draft: true
-
-# A footer to add to all releases.
-# release:
-#   footer: >-
-
-#     ---
-
-#     Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
+  # name_template: "{{ .ProjectName }} {{ .Tag }}"
+  header: |
+    Released on {{ .Date }}
 
 # Enables source archives.
 # source:
