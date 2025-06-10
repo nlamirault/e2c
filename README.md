@@ -17,6 +17,7 @@
 - 🔍 Filter and search for instances across multiple regions
 - 🌍 Monitor resource metrics
 - 🔐 Support for multiple AWS profiles and regions
+- 🚩 Feature flag support via OpenFeature standard
 
 ## Installation
 
@@ -38,6 +39,9 @@ e2c
 
 # Start with a specific AWS region
 e2c --region eu-west-1
+
+# Use environment variables for feature flags
+e2c --openfeature-provider=env
 
 # Show help
 e2c --help
@@ -78,7 +82,15 @@ aws:
 ui:
   # Compact mode reduces whitespace in the UI
   compact: false
+
+feature_flags:
+  enabled: true
+  provider: env  # "configcat" or "env"
+  env:
+    prefix: "E2C_FEATURE_"
 ```
+
+See [Feature Flags documentation](docs/feature-flags.md) for more details on available providers and configuration options.
 
 ### Environment Variables
 
@@ -86,6 +98,7 @@ The following environment variables can be used to configure e2c:
 
 - `E2C_LOG_LEVEL`: Set the logging level (debug, info, warn, error)
 - `E2C_LOG_FORMAT`: Set the log format ("json" or "text"). Default is text format with colors
+- `E2C_FEATURE_*`: Feature flags when using the environment variables provider (prefix can be configured)
 
 Examples:
 

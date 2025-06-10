@@ -12,6 +12,7 @@ import (
 
 	"github.com/nlamirault/e2c/internal/aws"
 	"github.com/nlamirault/e2c/internal/config"
+	"github.com/nlamirault/e2c/internal/featureflags"
 	"github.com/nlamirault/e2c/internal/logger"
 	"github.com/nlamirault/e2c/internal/ui"
 	"github.com/nlamirault/e2c/internal/version"
@@ -20,11 +21,12 @@ import (
 // NewRootCommand creates the root command for e2c
 func NewRootCommand(log *slog.Logger) *cobra.Command {
 	var (
-		cfgFile   string
-		profile   string
-		region    string
-		logFormat string
-		logLevel  string
+		cfgFile             string
+		profile             string
+		region              string
+		logFormat           string
+		logLevel            string
+		featureFlagProvider string
 	)
 
 	cmd := &cobra.Command{
@@ -64,6 +66,23 @@ across multiple regions.`,
 			// Override with CLI flags
 			cfg.Override(profile, region)
 
+			// Override feature flag provider if specified
+			if featureFlagProvider != "" {
+				log.Info("Overriding feature flag provider", "provider", featureFlagProvider)
+				cfg.OverrideFeatureFlags(featureFlagProvider)
+
+				// Make sure feature flags are enabled when provider is specified
+				if !cfg.FeatureFlags.Enabled {
+					log.Info("Enabling feature flags as provider was specified")
+					cfg.FeatureFlags.Enabled = true
+				}
+
+				// Re-initialize the feature flags client with the new provider
+				if err := featureflags.InitializeClient(log, cfg.FeatureFlags); err != nil {
+					log.Warn("Failed to initialize feature flags client", "error", err)
+				}
+			}
+
 			// Create AWS EC2 client
 			ec2Client, err := aws.NewEC2Client(log, cfg.AWS.DefaultRegion, cfg.AWS.Profile)
 			if err != nil {
@@ -87,6 +106,7 @@ across multiple regions.`,
 	cmd.PersistentFlags().StringVar(&region, "region", "", "AWS region to use")
 	cmd.PersistentFlags().StringVar(&logFormat, "log-format", "", "set log format (json, text)")
 	cmd.PersistentFlags().StringVar(&logLevel, "log-level", "", "set logging level (debug, info, warn, error)")
+	cmd.PersistentFlags().StringVar(&featureFlagProvider, "openfeature-provider", "env", "feature flag provider to use (configcat, env)")
 
 	// Add version command
 	cmd.AddCommand(newVersionCommand())

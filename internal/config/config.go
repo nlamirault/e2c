@@ -8,12 +8,15 @@ import (
 	"time"
 
 	"github.com/spf13/viper"
+
+	"github.com/nlamirault/e2c/internal/featureflags"
 )
 
 // Config represents the application configuration
 type Config struct {
-	AWS AWSConfig `mapstructure:"aws"`
-	UI  UIConfig  `mapstructure:"ui"`
+	AWS         AWSConfig                   `mapstructure:"aws"`
+	UI          UIConfig                    `mapstructure:"ui"`
+	FeatureFlags featureflags.FeatureFlagsConfig `mapstructure:"feature_flags"`
 }
 
 // AWSConfig holds AWS-specific configuration
@@ -35,6 +38,15 @@ func LoadConfig(log *slog.Logger) (*Config, error) {
 	viper.SetDefault("aws.refresh_interval", "30s")
 	viper.SetDefault("aws.profile", "")
 	viper.SetDefault("ui.compact", false)
+	viper.SetDefault("feature_flags.enabled", false)
+	viper.SetDefault("feature_flags.provider", "configcat")
+	viper.SetDefault("feature_flags.configcat.sdk_key", "")
+	viper.SetDefault("feature_flags.configcat.environment", "")
+	viper.SetDefault("feature_flags.configcat.base_url", "")
+	viper.SetDefault("feature_flags.configcat.cache_ttl_seconds", 60)
+	viper.SetDefault("feature_flags.configcat.polling_interval_seconds", 60)
+	viper.SetDefault("feature_flags.env.prefix", "E2C_FEATURE_")
+	viper.SetDefault("feature_flags.env.case_sensitive", false)
 
 
 	// Config file name and paths
@@ -74,6 +86,13 @@ func LoadConfig(log *slog.Logger) (*Config, error) {
 	if err := viper.Unmarshal(&config); err != nil {
 		return nil, fmt.Errorf("error unmarshalling config: %w", err)
 	}
+	
+	// Initialize feature flags if enabled
+	if config.FeatureFlags.Enabled {
+		if err := featureflags.InitializeClient(log, config.FeatureFlags); err != nil {
+			log.Warn("Failed to initialize feature flags client", "error", err)
+		}
+	}
 
 	return &config, nil
 }
@@ -85,5 +104,16 @@ func (c *Config) Override(profile, region string) {
 	}
 	if region != "" {
 		c.AWS.DefaultRegion = region
+	}
+}
+
+// OverrideFeatureFlags allows command-line flags to override feature flags config
+func (c *Config) OverrideFeatureFlags(provider string) {
+	if provider != "" {
+		c.FeatureFlags.Provider = featureflags.ProviderType(provider)
+		// When switching to environment provider, set default prefix if not already set
+		if c.FeatureFlags.Provider == featureflags.EnvProvider && c.FeatureFlags.Env.Prefix == "" {
+			c.FeatureFlags.Env.Prefix = "E2C_FEATURE_"
+		}
 	}
 }

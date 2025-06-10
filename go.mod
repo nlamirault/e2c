@@ -1,16 +1,25 @@
 module github.com/nlamirault/e2c
 
-go 1.22
+go 1.23.0
+
+toolchain go1.23.2
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.36.3
 	github.com/aws/aws-sdk-go-v2/config v1.27.7
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.152.0
+	github.com/blang/semver/v4 v4.0.0 // indirect
+	github.com/configcat/go-sdk/v9 v9.0.6 // indirect
 	github.com/gdamore/tcell/v2 v2.8.1
+	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/lmittmann/tint v1.1.2
+	github.com/open-feature/go-sdk v1.15.0
+	github.com/open-feature/go-sdk-contrib/providers/configcat v0.2.2
+	github.com/open-feature/go-sdk-contrib/providers/from-env v0.1.5
 	github.com/rivo/tview v0.0.0-20240307173318-e804876934a1
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.18.2
+	go.uber.org/mock v0.5.2 // indirect
 )
 
 require (
@@ -47,7 +56,7 @@ require (
 	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225 // indirect
 	golang.org/x/sys v0.29.0 // indirect
 	golang.org/x/term v0.28.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/text v0.25.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
