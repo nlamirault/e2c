@@ -11,6 +11,26 @@ ui:
   # Whether to use compact UI mode
   compact: false
 
+log:
+  # Log format feature flag (text, json)
+  format: text
+  # Log level feature flag (debug, info, warn, error)
+  level: info
+
+opentelemetry:
+  logs:
+    enabled: false
+    endpoint: "http://127.0.0.1:4318"
+    protocol: "grpc"
+  metrics:
+    enabled: false
+    endpoint: "http://127.0.0.1:4318"
+    protocol: "grpc"
+  traces:
+    enabled: false
+    endpoint: "http://127.0.0.1:4318"
+    protocol: "grpc"
+
 feature_flags:
   # Enable feature flags
   enabled: true
@@ -55,9 +75,3 @@ feature_flags:
     disable_automatic_event_logging: false
     # Disable custom event logging
     disable_custom_event_logging: false
-
-# # Log format feature flag (text, json)
-# log_format: text
-
-# # Log level feature flag (debug, info, warn, error)
-# log_level: info

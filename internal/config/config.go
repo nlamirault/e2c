@@ -12,13 +12,15 @@ import (
 
 	"github.com/nlamirault/e2c/internal/featureflags"
 	"github.com/nlamirault/e2c/internal/logger"
+	"github.com/nlamirault/e2c/internal/otel"
 )
 
 // Config represents the application configuration
 type Config struct {
-	AWS          AWSConfig                       `mapstructure:"aws"`
-	UI           UIConfig                        `mapstructure:"ui"`
-	FeatureFlags featureflags.FeatureFlagsConfig `mapstructure:"feature_flags"`
+	AWS           AWSConfig                       `mapstructure:"aws"`
+	UI            UIConfig                        `mapstructure:"ui"`
+	FeatureFlags  featureflags.FeatureFlagsConfig `mapstructure:"feature_flags"`
+	OpenTelemetry otel.OpenTelemetryConfig        `mapstructure:"opentelemetry"`
 }
 
 // AWSConfig holds AWS-specific configuration
@@ -40,6 +42,15 @@ func LoadConfig(log *slog.Logger) (*Config, error) {
 	viper.SetDefault("aws.refresh_interval", "30s")
 	viper.SetDefault("aws.profile", "")
 	viper.SetDefault("ui.compact", false)
+	viper.SetDefault("opentelemetry.logs.enabled", false)
+	viper.SetDefault("opentelemetry.logs.endpoint", "http://localhost:4318")
+	viper.SetDefault("opentelemetry.logs.protocol", "grpc")
+	viper.SetDefault("opentelemetry.metrics.enabled", false)
+	viper.SetDefault("opentelemetry.metrics.endpoint", "http://localhost:4318")
+	viper.SetDefault("opentelemetry.metrics.protocol", "grpc")
+	viper.SetDefault("opentelemetry.traces.enabled", false)
+	viper.SetDefault("opentelemetry.traces.endpoint", "http://localhost:4318")
+	viper.SetDefault("opentelemetry.traces.protocol", "grpc")
 	viper.SetDefault("feature_flags.enabled", false)
 	viper.SetDefault("feature_flags.provider", "configcat")
 	viper.SetDefault("feature_flags.configcat.sdk_key", "")
@@ -59,8 +70,8 @@ func LoadConfig(log *slog.Logger) (*Config, error) {
 	viper.SetDefault("feature_flags.devcycle.disable_custom_event_logging", false)
 
 	// Define default values for logging feature flags
-	viper.SetDefault("log_format", logger.DefaultLogFormat)
-	viper.SetDefault("log_level", logger.DefaultLogLevel)
+	viper.SetDefault("log.format", logger.DefaultLogFormat)
+	viper.SetDefault("log.level", logger.DefaultLogLevel)
 
 	// Config file name and paths
 	viper.SetConfigName("config")

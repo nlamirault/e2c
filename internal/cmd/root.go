@@ -18,6 +18,7 @@ import (
 	"github.com/nlamirault/e2c/internal/config"
 	"github.com/nlamirault/e2c/internal/featureflags"
 	"github.com/nlamirault/e2c/internal/logger"
+	"github.com/nlamirault/e2c/internal/otel"
 	"github.com/nlamirault/e2c/internal/ui"
 	"github.com/nlamirault/e2c/internal/version"
 )
@@ -74,6 +75,15 @@ across multiple regions.`,
 				if !logging {
 					log.Info("Feature flag set to disable logging")
 					logger.SetAsDefault(slog.New(slog.NewTextHandler(io.Discard, nil)))
+				}
+			}
+
+			opentelemetry, err := openfeatureClient.BooleanValue(ctx, "opentelemetry", false, openfeature.EvaluationContext{})
+			if err != nil {
+				log.Warn("Feature flag error while getting opentelemetry value", "error", err)
+			} else {
+				if opentelemetry {
+					otel.InitializeTelemetry(ctx, log, cfg.OpenTelemetry)
 				}
 			}
 
