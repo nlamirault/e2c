@@ -4,10 +4,12 @@
 package featureflags
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
+	"time"
 
+	configcatsdk "github.com/configcat/go-sdk/v9"
+	"github.com/open-feature/go-sdk-contrib/providers/configcat/pkg"
 	"github.com/open-feature/go-sdk/pkg/openfeature"
 )
 
@@ -25,80 +27,6 @@ type ConfigCatConfig struct {
 	PollingIntervalSeconds int `mapstructure:"polling_interval_seconds"`
 }
 
-// configCatProvider is a simple implementation of the OpenFeature provider interface
-// that uses ConfigCat as the underlying feature flag system
-type configCatProvider struct {
-	log    *slog.Logger
-	config ConfigCatConfig
-}
-
-// Metadata returns provider metadata
-func (p *configCatProvider) Metadata() openfeature.Metadata {
-	return openfeature.Metadata{
-		Name: "configcat",
-	}
-}
-
-// Hooks returns provider hooks
-func (p *configCatProvider) Hooks() []openfeature.Hook {
-	return nil
-}
-
-// BooleanEvaluation evaluates a boolean flag
-func (p *configCatProvider) BooleanEvaluation(ctx context.Context, flag string, defaultValue bool, evalCtx openfeature.FlattenedContext) openfeature.BoolResolutionDetail {
-	// This is a stub implementation that just returns the default value
-	// In a real implementation, this would call the ConfigCat SDK to get the actual value
-	p.log.Debug("ConfigCat flag evaluation", "flag", flag, "type", "boolean", "default", defaultValue)
-	
-	return openfeature.BoolResolutionDetail{
-		Value: defaultValue,
-	}
-}
-
-// StringEvaluation evaluates a string flag
-func (p *configCatProvider) StringEvaluation(ctx context.Context, flag string, defaultValue string, evalCtx openfeature.FlattenedContext) openfeature.StringResolutionDetail {
-	// This is a stub implementation that just returns the default value
-	// In a real implementation, this would call the ConfigCat SDK to get the actual value
-	p.log.Debug("ConfigCat flag evaluation", "flag", flag, "type", "string", "default", defaultValue)
-	
-	return openfeature.StringResolutionDetail{
-		Value: defaultValue,
-	}
-}
-
-// IntEvaluation evaluates an integer flag
-func (p *configCatProvider) IntEvaluation(ctx context.Context, flag string, defaultValue int64, evalCtx openfeature.FlattenedContext) openfeature.IntResolutionDetail {
-	// This is a stub implementation that just returns the default value
-	// In a real implementation, this would call the ConfigCat SDK to get the actual value
-	p.log.Debug("ConfigCat flag evaluation", "flag", flag, "type", "int", "default", defaultValue)
-	
-	return openfeature.IntResolutionDetail{
-		Value: defaultValue,
-	}
-}
-
-// FloatEvaluation evaluates a float flag
-func (p *configCatProvider) FloatEvaluation(ctx context.Context, flag string, defaultValue float64, evalCtx openfeature.FlattenedContext) openfeature.FloatResolutionDetail {
-	// This is a stub implementation that just returns the default value
-	// In a real implementation, this would call the ConfigCat SDK to get the actual value
-	p.log.Debug("ConfigCat flag evaluation", "flag", flag, "type", "float", "default", defaultValue)
-	
-	return openfeature.FloatResolutionDetail{
-		Value: defaultValue,
-	}
-}
-
-// ObjectEvaluation evaluates an object flag
-func (p *configCatProvider) ObjectEvaluation(ctx context.Context, flag string, defaultValue interface{}, evalCtx openfeature.FlattenedContext) openfeature.InterfaceResolutionDetail {
-	// This is a stub implementation that just returns the default value
-	// In a real implementation, this would call the ConfigCat SDK to get the actual value
-	p.log.Debug("ConfigCat flag evaluation", "flag", flag, "type", "object", "default", fmt.Sprintf("%v", defaultValue))
-	
-	return openfeature.InterfaceResolutionDetail{
-		Value: defaultValue,
-	}
-}
-
 // NewConfigCatProvider creates and returns a new ConfigCat provider
 func NewConfigCatProvider(log *slog.Logger, config ConfigCatConfig) (openfeature.FeatureProvider, error) {
 	if config.SDKKey == "" {
@@ -112,12 +40,25 @@ func NewConfigCatProvider(log *slog.Logger, config ConfigCatConfig) (openfeature
 		"cache_ttl", config.CacheTTLSeconds,
 		"polling_interval", config.PollingIntervalSeconds)
 
-	// Create a stub provider implementation
-	// In a real implementation, this would initialize the ConfigCat SDK client
-	provider := &configCatProvider{
-		log:    log,
-		config: config,
+	// Create ConfigCat client config
+	clientConfig := configcatsdk.Config{
+		SDKKey: config.SDKKey,
 	}
+
+	// Add optional configurations if provided
+	if config.BaseURL != "" {
+		clientConfig.BaseURL = config.BaseURL
+	}
+
+	if config.PollingIntervalSeconds > 0 {
+		clientConfig.PollInterval = time.Duration(config.PollingIntervalSeconds) * time.Second
+	}
+
+	// Create ConfigCat client
+	client := configcatsdk.NewCustomClient(clientConfig)
+
+	// Create the ConfigCat provider
+	provider := configcat.NewProvider(client)
 
 	return provider, nil
 }
