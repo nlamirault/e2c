@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"go.opentelemetry.io/otel"
-
 	// stdout "go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
@@ -19,12 +17,18 @@ func initMeter(ctx context.Context, resource *resource.Resource, cfg OpenTelemet
 	var err error
 	switch cfg.Protocol {
 	case ProtocolHTTP:
-		otlpExporter, err = otlpmetrichttp.New(ctx)
+		otlpExporter, err = otlpmetrichttp.New(
+			ctx,
+			otlpmetrichttp.WithHeaders(buildHeaders(cfg)),
+			otlpmetrichttp.WithEndpointURL(cfg.Endpoint))
 		if err != nil {
 			return nil, err
 		}
 	case ProtocolGRPC:
-		otlpExporter, err = otlpmetricgrpc.New(ctx)
+		otlpExporter, err = otlpmetricgrpc.New(
+			ctx,
+			otlpmetricgrpc.WithHeaders(buildHeaders(cfg)),
+			otlpmetricgrpc.WithEndpointURL(cfg.Endpoint))
 		if err != nil {
 			return nil, err
 		}
@@ -40,6 +44,6 @@ func initMeter(ctx context.Context, resource *resource.Resource, cfg OpenTelemet
 		return nil, err
 	}
 
-	otel.SetMeterProvider(mp)
+	// otel.SetMeterProvider(mp)
 	return mp, nil
 }

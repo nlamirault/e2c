@@ -6,9 +6,6 @@ package otel
 
 import (
 	"time"
-
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 )
 
 // Protocol specifies the OTLP exporter protocol
@@ -45,48 +42,4 @@ type OpenTelemetryConfig struct {
 	Logs        OpenTelemetrySignalConfig `mapstructure:"logs"`
 	Metrics     OpenTelemetrySignalConfig `mapstructure:"metrics"`
 	Traces      OpenTelemetrySignalConfig `mapstructure:"traces"`
-}
-
-// createGRPCExporterOptions creates OTLP gRPC exporter options from the configuration
-func createGRPCExporterOptions(cfg OpenTelemetrySignalConfig) []otlptracegrpc.Option {
-	opts := []otlptracegrpc.Option{
-		otlptracegrpc.WithEndpoint(cfg.Endpoint),
-		otlptracegrpc.WithTimeout(cfg.Timeout),
-	}
-
-	if cfg.Insecure {
-		opts = append(opts, otlptracegrpc.WithInsecure())
-	}
-
-	if len(cfg.Headers) > 0 {
-		headers := make(map[string]string)
-		for k, v := range cfg.Headers {
-			headers[k] = v
-		}
-		opts = append(opts, otlptracegrpc.WithHeaders(headers))
-	}
-
-	return opts
-}
-
-// createHTTPExporterOptions creates OTLP HTTP exporter options from the configuration
-func createHTTPExporterOptions(cfg OpenTelemetrySignalConfig) []otlptracehttp.Option {
-	opts := []otlptracehttp.Option{
-		otlptracehttp.WithEndpoint(cfg.Endpoint),
-		otlptracehttp.WithTimeout(cfg.Timeout),
-	}
-
-	if cfg.Insecure {
-		opts = append(opts, otlptracehttp.WithInsecure())
-	}
-
-	if len(cfg.Headers) > 0 {
-		headers := make(map[string]string)
-		for k, v := range cfg.Headers {
-			headers[k] = v
-		}
-		opts = append(opts, otlptracehttp.WithHeaders(headers))
-	}
-
-	return opts
 }

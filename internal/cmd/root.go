@@ -45,8 +45,9 @@ It provides a simple, intuitive interface for managing EC2 instances
 across multiple regions.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Configure logging if requested via flags
+			var logConfig *logger.Config
 			if logFormat != "" || logLevel != "" {
-				logConfig := logger.NewConfig()
+				logConfig = logger.NewConfig()
 
 				// Set format if specified
 				if logFormat != "" {
@@ -57,11 +58,10 @@ across multiple regions.`,
 				if logLevel != "" {
 					logConfig.Level = logger.ParseLevel(logLevel)
 				}
-
-				// Create and set the new logger
-				log = logger.New(logConfig)
-				logger.SetAsDefault(log)
 			}
+			// Create and set the new logger
+			log = logger.New(logConfig)
+			logger.SetAsDefault(log)
 
 			// Load configuration
 			cfg, err := config.LoadConfig(cfgFile, log)
@@ -107,6 +107,9 @@ across multiple regions.`,
 				if opentelemetry {
 					if err = otel.InitializeTelemetry(ctx, log, cfg.OpenTelemetry); err != nil {
 						log.Warn("OpenTelemetry configuration failed", "error", err)
+					}
+					if cfg.OpenTelemetry.Logs.Enabled {
+						// Configure slog with Otel handler.
 					}
 				}
 			}

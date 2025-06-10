@@ -4,9 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/propagation"
-
 	// stdout "go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -25,12 +22,18 @@ func initTracer(ctx context.Context, resource *resource.Resource, cfg OpenTeleme
 	var err error
 	switch cfg.Protocol {
 	case ProtocolHTTP:
-		otlpExporter, err = otlptracehttp.New(ctx)
+		otlpExporter, err = otlptracehttp.New(
+			ctx,
+			otlptracehttp.WithHeaders(buildHeaders(cfg)),
+			otlptracehttp.WithEndpointURL(cfg.Endpoint))
 		if err != nil {
 			return nil, err
 		}
 	case ProtocolGRPC:
-		otlpExporter, err = otlptracegrpc.New(ctx)
+		otlpExporter, err = otlptracegrpc.New(
+			ctx,
+			otlptracegrpc.WithHeaders(buildHeaders(cfg)),
+			otlptracegrpc.WithEndpointURL(cfg.Endpoint))
 		if err != nil {
 			return nil, err
 		}
@@ -45,7 +48,7 @@ func initTracer(ctx context.Context, resource *resource.Resource, cfg OpenTeleme
 		sdktrace.WithResource(resource),
 	)
 
-	otel.SetTracerProvider(tp)
-	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+	// otel.SetTracerProvider(tp)
+	// otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 	return tp, nil
 }

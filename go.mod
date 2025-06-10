@@ -16,6 +16,7 @@ require (
 	github.com/open-feature/go-sdk-contrib/providers/configcat v0.2.2
 	github.com/open-feature/go-sdk-contrib/providers/from-env v0.1.5
 	github.com/rivo/tview v0.0.0-20250501113434-0c592cd31026
+	github.com/samber/slog-multi v1.4.0
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
 	go.opentelemetry.io/contrib/bridges/otelslog v0.11.0
@@ -72,6 +73,7 @@ require (
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sagikazarmark/locafero v0.7.0 // indirect
+	github.com/samber/lo v1.49.1 // indirect
 	github.com/shirou/gopsutil/v4 v4.25.4 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.12.0 // indirect

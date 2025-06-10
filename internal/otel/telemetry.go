@@ -6,28 +6,20 @@ import (
 	"time"
 
 	"github.com/nlamirault/e2c/internal/version"
+	slogmulti "github.com/samber/slog-multi"
+	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/contrib/instrumentation/host"
 	otelruntime "go.opentelemetry.io/contrib/instrumentation/runtime"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	logglobal "go.opentelemetry.io/otel/log/global"
 	"go.opentelemetry.io/otel/propagation"
+	logsdk "go.opentelemetry.io/otel/sdk/log"
+	metricsdk "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
-	semconv "go.opentelemetry.io/otel/semconv/v1.32.0"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 )
-
-// OpenTelemetryConfig holds the configuration for OpenTelemetry
-// type OpenTelemetryConfig struct {
-// 	// The provider to use (configcat, env, devcycle)
-// 	Provider LogsConfig `mapstructure:"logs"`
-// 	// ConfigCat-specific configuration
-// 	ConfigCat ConfigCatConfig `mapstructure:"metrics"`
-// 	// Environment variable provider configuration
-// 	Env EnvConfig `mapstructure:"env"`
-// 	// DevCycle-specific configuration
-// 	DevCycle DevCycleConfig `mapstructure:"traces"`
-// 	// Enabled state for feature flags functionality
-// 	Enabled bool `mapstructure:"enabled"`
-// }
 
 // createResource creates a new OpenTelemetry resource with the application attributes
 func createResource(ctx context.Context, cfg OpenTelemetryConfig) (*resource.Resource, error) {
@@ -35,6 +27,7 @@ func createResource(ctx context.Context, cfg OpenTelemetryConfig) (*resource.Res
 		resource.WithAttributes(
 			semconv.ServiceNameKey.String(cfg.ServiceName),
 			semconv.ServiceVersionKey.String(version.GetVersion()),
+			semconv.DeploymentEnvironmentKey.String(cfg.Environment),
 			attribute.String("environment", cfg.Environment),
 		),
 		resource.WithSchemaURL(semconv.SchemaURL),
@@ -51,6 +44,17 @@ func createResource(ctx context.Context, cfg OpenTelemetryConfig) (*resource.Res
 		extraResources,
 	)
 	return r, nil
+}
+
+func buildHeaders(cfg OpenTelemetrySignalConfig) map[string]string {
+	if len(cfg.Headers) == 0 {
+		return nil
+	}
+	headers := make(map[string]string)
+	for k, v := range cfg.Headers {
+		headers[k] = v
+	}
+	return headers
 }
 
 // InitializeTelemetry initializes the OpenTelemetry configuration
@@ -81,7 +85,7 @@ func InitializeTelemetry(ctx context.Context, log *slog.Logger, cfg OpenTelemetr
 	}
 
 	if cfg.Logs.Enabled {
-		log.Error("OpenTelemetry Logs")
+		log.Info("Setup OpenTelemetry for logs")
 		lp, err := initLogger(ctx, res, cfg.ServiceName, cfg.Logs, log)
 		if err != nil {
 			return err
@@ -91,9 +95,16 @@ func InitializeTelemetry(ctx context.Context, log *slog.Logger, cfg OpenTelemetr
 				log.Warn("Error shutting down OpenTelemtry logger provider: %v", err)
 			}
 		}()
+		handlers := []slog.Handler{
+			slog.Default().Handler(),
+			otelslog.NewHandler("e2c"),
+		}
+		slog.SetDefault(slog.New(slogmulti.Fanout(handlers...)))
+		logglobal.SetLoggerProvider(lp)
 	}
 
 	if cfg.Traces.Enabled {
+		log.Info("Setup OpenTelemetry for traces")
 		tp, err := initTracer(ctx, res, cfg.Traces)
 		if err != nil {
 			return err
@@ -103,9 +114,12 @@ func InitializeTelemetry(ctx context.Context, log *slog.Logger, cfg OpenTelemetr
 				log.Warn("Error shutting down OpenTelemetry tracer provider: %v", err)
 			}
 		}()
+		otel.SetTracerProvider(tp)
+		otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 	}
 
 	if cfg.Metrics.Enabled {
+		log.Info("Setup OpenTelemetry for metrics")
 		mp, err := initMeter(ctx, res, cfg.Metrics)
 		if err != nil {
 			return err
@@ -126,6 +140,7 @@ func InitializeTelemetry(ctx context.Context, log *slog.Logger, cfg OpenTelemetr
 		if err = host.Start(host.WithMeterProvider(mp)); err != nil {
 			return err
 		}
+		otel.SetMeterProvider(mp)
 	}
 
 	log.Debug("OpenTelemetry providers are setup")
@@ -135,4 +150,22 @@ func InitializeTelemetry(ctx context.Context, log *slog.Logger, cfg OpenTelemetr
 // Shutdown gracefully shuts down the OpenTelemetry SDK
 func Shutdown(ctx context.Context, log *slog.Logger) {
 	log.Info("Shutting down OpenTelemetry")
+
+	if gtp, ok := otel.GetTracerProvider().(*tracesdk.TracerProvider); ok {
+		log.Debug("Shutting down OpenTelemetry Log")
+		gtp.ForceFlush(ctx)
+		gtp.Shutdown(ctx)
+	}
+
+	if gmp, ok := otel.GetMeterProvider().(*metricsdk.MeterProvider); ok {
+		log.Debug("Shutting down OpenTelemetry Metric")
+		gmp.ForceFlush(ctx)
+		gmp.Shutdown(ctx)
+	}
+
+	if glp, ok := logglobal.GetLoggerProvider().(*logsdk.LoggerProvider); ok {
+		log.Debug("Shutting down OpenTelemetry Trace")
+		glp.ForceFlush(ctx)
+		glp.Shutdown(ctx)
+	}
 }
