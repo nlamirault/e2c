@@ -36,9 +36,9 @@ type UIConfig struct {
 }
 
 // LoadConfig loads the configuration from file and environment variables
-func LoadConfig(log *slog.Logger) (*Config, error) {
+func LoadConfig(configFile string, log *slog.Logger) (*Config, error) {
 	// Set defaults
-	viper.SetDefault("aws.default_region", "us-west-1")
+	viper.SetDefault("aws.default_region", "")
 	viper.SetDefault("aws.refresh_interval", "30s")
 	viper.SetDefault("aws.profile", "")
 	viper.SetDefault("ui.compact", false)
@@ -95,6 +95,9 @@ func LoadConfig(log *slog.Logger) (*Config, error) {
 	viper.AutomaticEnv()
 
 	// Try to read config file
+	if len(configFile) > 0 {
+		viper.SetConfigFile(configFile)
+	}
 	err = viper.ReadInConfig()
 	if err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {

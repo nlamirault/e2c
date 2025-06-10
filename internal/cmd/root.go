@@ -29,6 +29,8 @@ func NewRootCommand(log *slog.Logger) *cobra.Command {
 		cfgFile             string
 		profile             string
 		region              string
+		logFormat           string
+		logLevel            string
 		featureFlagProvider string
 		openfeatureClient   *openfeature.Client
 	)
@@ -42,8 +44,27 @@ inspired by k9s for Kubernetes and e1s for ECS.
 It provides a simple, intuitive interface for managing EC2 instances
 across multiple regions.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// Configure logging if requested via flags
+			if logFormat != "" || logLevel != "" {
+				logConfig := logger.NewConfig()
+
+				// Set format if specified
+				if logFormat != "" {
+					logConfig.Format = logger.ParseFormat(logFormat)
+				}
+
+				// Set level if specified
+				if logLevel != "" {
+					logConfig.Level = logger.ParseLevel(logLevel)
+				}
+
+				// Create and set the new logger
+				log = logger.New(logConfig)
+				logger.SetAsDefault(log)
+			}
+
 			// Load configuration
-			cfg, err := config.LoadConfig(log)
+			cfg, err := config.LoadConfig(cfgFile, log)
 			if err != nil {
 				return fmt.Errorf("failed to load config: %w", err)
 			}
@@ -72,8 +93,8 @@ across multiple regions.`,
 			if err != nil {
 				log.Warn("Feature flag error while getting logging value", "error", err)
 			} else {
+				log.Debug("Feature flag", "logging", logging)
 				if !logging {
-					log.Info("Feature flag set to disable logging")
 					logger.SetAsDefault(slog.New(slog.NewTextHandler(io.Discard, nil)))
 				}
 			}
@@ -82,8 +103,11 @@ across multiple regions.`,
 			if err != nil {
 				log.Warn("Feature flag error while getting opentelemetry value", "error", err)
 			} else {
+				log.Debug("Feature flag", "opentelemetry", opentelemetry)
 				if opentelemetry {
-					otel.InitializeTelemetry(ctx, log, cfg.OpenTelemetry)
+					if err = otel.InitializeTelemetry(ctx, log, cfg.OpenTelemetry); err != nil {
+						log.Warn("OpenTelemetry configuration failed", "error", err)
+					}
 				}
 			}
 
@@ -115,6 +139,8 @@ across multiple regions.`,
 	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/e2c/config.yaml)")
 	cmd.PersistentFlags().StringVar(&profile, "profile", "", "AWS profile to use")
 	cmd.PersistentFlags().StringVar(&region, "region", "", "AWS region to use")
+	cmd.PersistentFlags().StringVar(&logFormat, "log-format", "", "set log format (json, text)")
+	cmd.PersistentFlags().StringVar(&logLevel, "log-level", "", "set logging level (debug, info, warn, error)")
 	cmd.PersistentFlags().StringVar(&featureFlagProvider, "openfeature-provider", "env", "feature flag provider to use (configcat, env, devcycle)")
 
 	// Add version command

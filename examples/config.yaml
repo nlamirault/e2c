@@ -1,7 +1,7 @@
 # Example configuration file for e2c with feature flags
 aws:
   # Default AWS region to use
-  default_region: us-west-1
+  default_region: eu-west-1
   # Refresh interval for AWS data
   refresh_interval: 30s
   # AWS profile to use
@@ -18,18 +18,29 @@ log:
   level: info
 
 opentelemetry:
+  service_name: e2c
+  environment: prod
   logs:
-    enabled: false
+    enabled: true
     endpoint: "http://127.0.0.1:4318"
     protocol: "grpc"
+    insecure: true
+    headers: []
+    timeout: 60
   metrics:
     enabled: false
     endpoint: "http://127.0.0.1:4318"
     protocol: "grpc"
+    insecure: true
+    headers: []
+    timeout: 60
   traces:
     enabled: false
     endpoint: "http://127.0.0.1:4318"
     protocol: "grpc"
+    insecure: true
+    headers: []
+    timeout: 60
 
 feature_flags:
   # Enable feature flags
