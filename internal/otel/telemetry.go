@@ -92,7 +92,7 @@ func InitializeTelemetry(ctx context.Context, log *slog.Logger, cfg OpenTelemetr
 		}
 		defer func() {
 			if err := lp.Shutdown(context.Background()); err != nil {
-				log.Warn("Error shutting down OpenTelemtry logger provider: %v", err)
+				log.Warn("Error shutting down OpenTelemtry logger provider", "error", err)
 			}
 		}()
 		handlers := []slog.Handler{
@@ -111,7 +111,7 @@ func InitializeTelemetry(ctx context.Context, log *slog.Logger, cfg OpenTelemetr
 		}
 		defer func() {
 			if err := tp.Shutdown(context.Background()); err != nil {
-				log.Warn("Error shutting down OpenTelemetry tracer provider: %v", err)
+				log.Warn("Error shutting down OpenTelemetry tracer provider", "error", err)
 			}
 		}()
 		otel.SetTracerProvider(tp)
@@ -126,7 +126,7 @@ func InitializeTelemetry(ctx context.Context, log *slog.Logger, cfg OpenTelemetr
 		}
 		defer func() {
 			if err := mp.Shutdown(context.Background()); err != nil {
-				log.Warn("Error shutting down OpenTelemetry meter provider: %v", err)
+				log.Warn("Error shutting down OpenTelemetry meter provider", "error", err)
 			}
 		}()
 
