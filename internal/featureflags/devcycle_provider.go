@@ -9,7 +9,7 @@ import (
 	"time"
 
 	dvc "github.com/devcyclehq/go-server-sdk/v2"
-	"github.com/open-feature/go-sdk/pkg/openfeature"
+	"github.com/open-feature/go-sdk/openfeature"
 )
 
 // DevCycleConfig holds the configuration for DevCycle
@@ -46,8 +46,8 @@ func NewDevCycleProvider(log *slog.Logger, config DevCycleConfig) (openfeature.F
 
 	// Create DevCycle options
 	options := dvc.Options{
-		EnableEdgeDB:         config.EnableEdgeDB,
-		EnableCloudBucketing: config.EnableCloudBucketing,
+		EnableEdgeDB:                 config.EnableEdgeDB,
+		EnableCloudBucketing:         config.EnableCloudBucketing,
 		DisableAutomaticEventLogging: config.DisableAutomaticEventLogging,
 		DisableCustomEventLogging:    config.DisableCustomEventLogging,
 	}
