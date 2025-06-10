@@ -1,22 +1,88 @@
-# SPDX-FileCopyrightText: Copyright (C) Nicolas Lamirault <nicolas.lamirault@gmail.com>
-# SPDX-License-Identifier: Apache-2.0
-
+# Example configuration file for e2c with feature flags
 aws:
   # Default AWS region to use
   default_region: eu-west-1
-
-  # Refresh interval for EC2 instance data (in seconds)
+  # Refresh interval for AWS data
   refresh_interval: 30s
-
-  # Optional AWS profile to use
-  # If not specified, the default credentials chain will be used
+  # AWS profile to use
   profile: ""
 
 ui:
-  # UI theme (dark or light)
-  theme: dark
-
-  # Compact mode reduces whitespace in the UI
+  # Whether to use compact UI mode
   compact: false
 
-  # The UI uses the Nord color theme by default
+log:
+  # Log format feature flag (text, json)
+  format: text
+  # Log level feature flag (debug, info, warn, error)
+  level: info
+
+opentelemetry:
+  service_name: e2c
+  environment: prod
+  logs:
+    enabled: true
+    endpoint: "http://127.0.0.1:4318"
+    protocol: "grpc"
+    insecure: true
+    headers: []
+    timeout: 60
+  metrics:
+    enabled: false
+    endpoint: "http://127.0.0.1:4318"
+    protocol: "grpc"
+    insecure: true
+    headers: []
+    timeout: 60
+  traces:
+    enabled: false
+    endpoint: "http://127.0.0.1:4318"
+    protocol: "grpc"
+    insecure: true
+    headers: []
+    timeout: 60
+
+feature_flags:
+  # Enable feature flags
+  enabled: true
+  # Provider to use (configcat, env, devcycle)
+  provider: env
+
+  # ConfigCat configuration
+  configcat:
+    # ConfigCat SDK key (required for ConfigCat provider)
+    sdk_key: ""
+    # Optional ConfigCat environment
+    environment: ""
+    # Optional ConfigCat base URL (for on-premise installations)
+    base_url: ""
+    # Cache TTL in seconds
+    cache_ttl_seconds: 60
+    # Polling interval in seconds
+    polling_interval_seconds: 60
+
+  # Environment variable provider configuration
+  env:
+    # Prefix for environment variables
+    prefix: "E2C_FEATURE_"
+    # Whether environment variable names are case-sensitive
+    case_sensitive: false
+
+  # DevCycle configuration
+  devcycle:
+    # DevCycle server key (required for DevCycle provider)
+    server_key: ""
+    # Enable EdgeDB
+    enable_edge_db: false
+    # Enable cloud bucketing
+    enable_cloud_bucketing: false
+    # Request timeout in seconds
+    timeout_seconds: 10
+    # Config polling interval in seconds
+    config_polling_interval_seconds: 60
+    # Event flush interval in seconds
+    event_flush_interval_seconds: 30
+    # Disable automatic event logging
+    disable_automatic_event_logging: false
+    # Disable custom event logging
+    disable_custom_event_logging: false

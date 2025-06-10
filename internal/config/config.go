@@ -5,15 +5,23 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/spf13/viper"
+
+	"github.com/nlamirault/e2c/internal/featureflags"
+	"github.com/nlamirault/e2c/internal/logger"
+	"github.com/nlamirault/e2c/internal/otel"
+	"github.com/nlamirault/e2c/internal/utils"
 )
 
 // Config represents the application configuration
 type Config struct {
-	AWS AWSConfig `mapstructure:"aws"`
-	UI  UIConfig  `mapstructure:"ui"`
+	AWS           AWSConfig                       `mapstructure:"aws"`
+	UI            UIConfig                        `mapstructure:"ui"`
+	FeatureFlags  featureflags.FeatureFlagsConfig `mapstructure:"feature_flags"`
+	OpenTelemetry otel.OpenTelemetryConfig        `mapstructure:"opentelemetry"`
 }
 
 // AWSConfig holds AWS-specific configuration
@@ -29,13 +37,42 @@ type UIConfig struct {
 }
 
 // LoadConfig loads the configuration from file and environment variables
-func LoadConfig(log *slog.Logger) (*Config, error) {
+func LoadConfig(configFile string, log *slog.Logger) (*Config, error) {
 	// Set defaults
-	viper.SetDefault("aws.default_region", "us-west-1")
+	viper.SetDefault("aws.default_region", "")
 	viper.SetDefault("aws.refresh_interval", "30s")
 	viper.SetDefault("aws.profile", "")
 	viper.SetDefault("ui.compact", false)
+	viper.SetDefault("opentelemetry.logs.enabled", false)
+	viper.SetDefault("opentelemetry.logs.endpoint", "http://localhost:4318")
+	viper.SetDefault("opentelemetry.logs.protocol", "grpc")
+	viper.SetDefault("opentelemetry.metrics.enabled", false)
+	viper.SetDefault("opentelemetry.metrics.endpoint", "http://localhost:4318")
+	viper.SetDefault("opentelemetry.metrics.protocol", "grpc")
+	viper.SetDefault("opentelemetry.traces.enabled", false)
+	viper.SetDefault("opentelemetry.traces.endpoint", "http://localhost:4318")
+	viper.SetDefault("opentelemetry.traces.protocol", "grpc")
+	viper.SetDefault("feature_flags.enabled", false)
+	viper.SetDefault("feature_flags.provider", "configcat")
+	viper.SetDefault("feature_flags.configcat.sdk_key", "")
+	viper.SetDefault("feature_flags.configcat.environment", "")
+	viper.SetDefault("feature_flags.configcat.base_url", "")
+	viper.SetDefault("feature_flags.configcat.cache_ttl_seconds", 60)
+	viper.SetDefault("feature_flags.configcat.polling_interval_seconds", 60)
+	viper.SetDefault("feature_flags.env.prefix", featureflags.FEATURE_PREFIX)
+	viper.SetDefault("feature_flags.env.case_sensitive", false)
+	viper.SetDefault("feature_flags.devcycle.server_key", "")
+	viper.SetDefault("feature_flags.devcycle.enable_edge_db", false)
+	viper.SetDefault("feature_flags.devcycle.enable_cloud_bucketing", false)
+	viper.SetDefault("feature_flags.devcycle.timeout_seconds", 10)
+	viper.SetDefault("feature_flags.devcycle.config_polling_interval_seconds", 60)
+	viper.SetDefault("feature_flags.devcycle.event_flush_interval_seconds", 30)
+	viper.SetDefault("feature_flags.devcycle.disable_automatic_event_logging", false)
+	viper.SetDefault("feature_flags.devcycle.disable_custom_event_logging", false)
 
+	// Define default values for logging feature flags
+	viper.SetDefault("log.format", logger.DefaultLogFormat)
+	viper.SetDefault("log.level", logger.DefaultLogLevel)
 
 	// Config file name and paths
 	viper.SetConfigName("config")
@@ -46,7 +83,7 @@ func LoadConfig(log *slog.Logger) (*Config, error) {
 	if err != nil {
 		log.Warn("Could not determine user home directory", "error", err)
 	} else {
-		configDir := filepath.Join(homeDir, ".config", "e2c")
+		configDir := filepath.Join(homeDir, ".config", utils.APP_NAME)
 		viper.AddConfigPath(configDir)
 	}
 
@@ -54,10 +91,14 @@ func LoadConfig(log *slog.Logger) (*Config, error) {
 	viper.AddConfigPath(".")
 
 	// Environment variables
-	viper.SetEnvPrefix("E2C")
+	viper.SetEnvPrefix(strings.ToUpper(utils.APP_NAME))
+	viper.SetEnvKeyReplacer(strings.NewReplacer(`.`, `_`))
 	viper.AutomaticEnv()
 
 	// Try to read config file
+	if len(configFile) > 0 {
+		viper.SetConfigFile(configFile)
+	}
 	err = viper.ReadInConfig()
 	if err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
@@ -75,6 +116,7 @@ func LoadConfig(log *slog.Logger) (*Config, error) {
 		return nil, fmt.Errorf("error unmarshalling config: %w", err)
 	}
 
+	log.Debug("Configuration loaded", "config", config)
 	return &config, nil
 }
 
@@ -85,5 +127,16 @@ func (c *Config) Override(profile, region string) {
 	}
 	if region != "" {
 		c.AWS.DefaultRegion = region
+	}
+}
+
+// OverrideFeatureFlags allows command-line flags to override feature flags config
+func (c *Config) OverrideFeatureFlags(provider string) {
+	if provider != "" {
+		c.FeatureFlags.Provider = featureflags.ProviderType(provider)
+		// When switching to environment provider, set default prefix if not already set
+		if c.FeatureFlags.Provider == featureflags.EnvProvider && c.FeatureFlags.Env.Prefix == "" {
+			c.FeatureFlags.Env.Prefix = featureflags.FEATURE_PREFIX
+		}
 	}
 }

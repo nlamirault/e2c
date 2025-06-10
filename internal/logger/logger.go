@@ -25,17 +25,19 @@ const (
 	WarnLevel Level = "warn"
 	// ErrorLevel logs error messages
 	ErrorLevel Level = "error"
-)
+	// DefaultLogLevel defines the defaut log level
+	DefaultLogLevel = InfoLevel
 
-// Format represents the log output format
-type Format string
-
-const (
 	// TextFormat outputs logs in human-readable text format
 	TextFormat Format = "text"
 	// JSONFormat outputs logs in JSON format
 	JSONFormat Format = "json"
+	// DefaultLogFormat defines the default format used
+	DefaultLogFormat = TextFormat
 )
+
+// Format represents the log output format
+type Format string
 
 // String returns the string representation of the format
 func (f Format) String() string {

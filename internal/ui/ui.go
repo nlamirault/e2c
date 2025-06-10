@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/open-feature/go-sdk/openfeature"
 	"github.com/rivo/tview"
 
 	"github.com/nlamirault/e2c/internal/aws"
@@ -29,6 +30,7 @@ type UI struct {
 	helpView      *HelpView
 	log           *slog.Logger
 	ec2Client     *aws.EC2Client
+	ofClient      *openfeature.Client
 	config        *config.Config
 	ctx           context.Context
 	cancel        context.CancelFunc
@@ -38,7 +40,7 @@ type UI struct {
 }
 
 // NewUI creates a new UI instance
-func NewUI(log *slog.Logger, ec2Client *aws.EC2Client, cfg *config.Config) *UI {
+func NewUI(log *slog.Logger, ec2Client *aws.EC2Client, openfeatureClient *openfeature.Client, cfg *config.Config) *UI {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// Initialize colors
@@ -49,6 +51,7 @@ func NewUI(log *slog.Logger, ec2Client *aws.EC2Client, cfg *config.Config) *UI {
 		pages:     tview.NewPages(),
 		log:       log,
 		ec2Client: ec2Client,
+		ofClient:  openfeatureClient,
 		config:    cfg,
 		ctx:       ctx,
 		cancel:    cancel,
