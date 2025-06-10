@@ -6,6 +6,7 @@ package featureflags
 import (
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	configcatsdk "github.com/configcat/go-sdk/v9"
@@ -29,8 +30,17 @@ type ConfigCatConfig struct {
 
 // NewConfigCatProvider creates and returns a new ConfigCat provider
 func NewConfigCatProvider(log *slog.Logger, config ConfigCatConfig) (openfeature.FeatureProvider, error) {
+	// Validate SDK key presence
 	if config.SDKKey == "" {
+		log.Error("ConfigCat initialization failed: empty SDK key", "provider", "configcat")
 		return nil, fmt.Errorf("ConfigCat SDK key is required")
+	}
+	
+	// Validate SDK key format (basic check for non-whitespace characters)
+	trimmedKey := strings.TrimSpace(config.SDKKey)
+	if trimmedKey == "" || len(trimmedKey) < 10 {
+		log.Error("ConfigCat initialization failed: invalid SDK key format", "provider", "configcat")
+		return nil, fmt.Errorf("ConfigCat SDK key format is invalid")
 	}
 
 	log.Info("Initializing ConfigCat provider",
@@ -43,6 +53,7 @@ func NewConfigCatProvider(log *slog.Logger, config ConfigCatConfig) (openfeature
 	// Create ConfigCat client config
 	clientConfig := configcatsdk.Config{
 		SDKKey: config.SDKKey,
+		Logger: configcatsdk.DefaultLogger(),
 	}
 
 	// Add optional configurations if provided
@@ -59,6 +70,19 @@ func NewConfigCatProvider(log *slog.Logger, config ConfigCatConfig) (openfeature
 
 	// Create the ConfigCat provider
 	provider := configcat.NewProvider(client)
+	
+	log.Info("ConfigCat provider initialized successfully", 
+		"sdk_key_masked", maskSDKKey(config.SDKKey),
+		"environment", config.Environment)
 
 	return provider, nil
+}
+
+// maskSDKKey returns a masked version of the SDK key for safe logging
+func maskSDKKey(key string) string {
+	if len(key) <= 8 {
+		return "****"
+	}
+	// Show first 4 and last 4 characters, mask the rest
+	return key[:4] + "..." + key[len(key)-4:]
 }

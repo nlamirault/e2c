@@ -6,6 +6,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 
@@ -64,34 +65,17 @@ across multiple regions.`,
 				}
 			}
 
-			// Configure logging using feature flags
 			ctx := context.Background()
-			logConfig := logger.NewConfig()
 
-			// Get log format from feature flag
-			logFormatValue, err := openfeatureClient.StringValue(ctx, "log-format", "text", openfeature.EvaluationContext{})
+			logging, err := openfeatureClient.BooleanValue(ctx, "logging", false, openfeature.EvaluationContext{})
 			if err != nil {
-				log.Warn("Feature flag error while getting log-format value", "error", err)
+				log.Warn("Feature flag error while getting logging value", "error", err)
 			} else {
-				if logFormatValue != "" {
-					logConfig.Format = logger.ParseFormat(logFormatValue)
-					log.Debug("Log format set from feature flag", "format", logFormatValue)
+				if !logging {
+					log.Info("Feature flag set to disable logging")
+					logger.SetAsDefault(slog.New(slog.NewTextHandler(io.Discard, nil)))
 				}
 			}
-			// Get log level from feature flag
-			logLevelValue, err := openfeatureClient.StringValue(ctx, "log-level", "info", openfeature.EvaluationContext{})
-			if err != nil {
-				log.Warn("Feature flag error while getting log-level value", "error", err)
-			} else {
-				if logLevelValue != "" {
-					logConfig.Level = logger.ParseLevel(logLevelValue)
-					log.Debug("Log level set from feature flag", "level", logLevelValue)
-				}
-			}
-
-			// Create and set the new logger
-			log = logger.New(logConfig)
-			logger.SetAsDefault(log)
 
 			// Override with CLI flags
 			cfg.Override(profile, region)

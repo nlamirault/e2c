@@ -5,11 +5,13 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/spf13/viper"
 
 	"github.com/nlamirault/e2c/internal/featureflags"
+	"github.com/nlamirault/e2c/internal/logger"
 )
 
 // Config represents the application configuration
@@ -57,8 +59,8 @@ func LoadConfig(log *slog.Logger) (*Config, error) {
 	viper.SetDefault("feature_flags.devcycle.disable_custom_event_logging", false)
 
 	// Define default values for logging feature flags
-	viper.SetDefault("log_format", "text")
-	viper.SetDefault("log_level", "info")
+	viper.SetDefault("log_format", logger.DefaultLogFormat)
+	viper.SetDefault("log_level", logger.DefaultLogLevel)
 
 	// Config file name and paths
 	viper.SetConfigName("config")
@@ -78,6 +80,7 @@ func LoadConfig(log *slog.Logger) (*Config, error) {
 
 	// Environment variables
 	viper.SetEnvPrefix("E2C")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(`.`, `_`))
 	viper.AutomaticEnv()
 
 	// Try to read config file
@@ -98,6 +101,7 @@ func LoadConfig(log *slog.Logger) (*Config, error) {
 		return nil, fmt.Errorf("error unmarshalling config: %w", err)
 	}
 
+	log.Debug("Configuration loaded", "config", config)
 	return &config, nil
 }
 
