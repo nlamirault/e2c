@@ -47,6 +47,14 @@ func LoadConfig(log *slog.Logger) (*Config, error) {
 	viper.SetDefault("feature_flags.configcat.polling_interval_seconds", 60)
 	viper.SetDefault("feature_flags.env.prefix", "E2C_FEATURE_")
 	viper.SetDefault("feature_flags.env.case_sensitive", false)
+	viper.SetDefault("feature_flags.devcycle.server_key", "")
+	viper.SetDefault("feature_flags.devcycle.enable_edge_db", false)
+	viper.SetDefault("feature_flags.devcycle.enable_cloud_bucketing", false)
+	viper.SetDefault("feature_flags.devcycle.timeout_seconds", 10)
+	viper.SetDefault("feature_flags.devcycle.config_polling_interval_seconds", 60)
+	viper.SetDefault("feature_flags.devcycle.event_flush_interval_seconds", 30)
+	viper.SetDefault("feature_flags.devcycle.disable_automatic_event_logging", false)
+	viper.SetDefault("feature_flags.devcycle.disable_custom_event_logging", false)
 
 
 	// Config file name and paths

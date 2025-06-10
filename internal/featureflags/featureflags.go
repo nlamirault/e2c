@@ -22,6 +22,8 @@ const (
 	ConfigCatProvider ProviderType = "configcat"
 	// EnvProvider represents the environment variable provider
 	EnvProvider ProviderType = "env"
+	// DevCycleProvider represents the DevCycle provider
+	DevCycleProvider ProviderType = "devcycle"
 )
 
 var (
@@ -31,12 +33,14 @@ var (
 
 // FeatureFlagsConfig holds the configuration for feature flags
 type FeatureFlagsConfig struct {
-	// The provider to use (configcat, env)
+	// The provider to use (configcat, env, devcycle)
 	Provider ProviderType `mapstructure:"provider"`
 	// ConfigCat-specific configuration
 	ConfigCat ConfigCatConfig `mapstructure:"configcat"`
 	// Environment variable provider configuration
 	Env EnvConfig `mapstructure:"env"`
+	// DevCycle-specific configuration
+	DevCycle DevCycleConfig `mapstructure:"devcycle"`
 	// Enabled state for feature flags functionality
 	Enabled bool `mapstructure:"enabled"`
 }
@@ -63,6 +67,8 @@ func InitializeClient(log *slog.Logger, config FeatureFlagsConfig) error {
 			provider, providerErr = NewConfigCatProvider(log, config.ConfigCat)
 		case EnvProvider:
 			provider, providerErr = NewEnvProvider(log, config.Env)
+		case DevCycleProvider:
+			provider, providerErr = NewDevCycleProvider(log, config.DevCycle)
 		default:
 			providerErr = fmt.Errorf("unsupported provider type: %s", config.Provider)
 		}

@@ -106,7 +106,7 @@ across multiple regions.`,
 	cmd.PersistentFlags().StringVar(&region, "region", "", "AWS region to use")
 	cmd.PersistentFlags().StringVar(&logFormat, "log-format", "", "set log format (json, text)")
 	cmd.PersistentFlags().StringVar(&logLevel, "log-level", "", "set logging level (debug, info, warn, error)")
-	cmd.PersistentFlags().StringVar(&featureFlagProvider, "openfeature-provider", "env", "feature flag provider to use (configcat, env)")
+	cmd.PersistentFlags().StringVar(&featureFlagProvider, "openfeature-provider", "env", "feature flag provider to use (configcat, env, devcycle)")
 
 	// Add version command
 	cmd.AddCommand(newVersionCommand())
