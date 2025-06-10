@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/nlamirault/e2c/internal/version"
 	slogmulti "github.com/samber/slog-multi"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/contrib/instrumentation/host"
@@ -19,6 +18,9 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
+
+	"github.com/nlamirault/e2c/internal/utils"
+	"github.com/nlamirault/e2c/internal/version"
 )
 
 // createResource creates a new OpenTelemetry resource with the application attributes
@@ -97,7 +99,7 @@ func InitializeTelemetry(ctx context.Context, log *slog.Logger, cfg OpenTelemetr
 		}()
 		handlers := []slog.Handler{
 			slog.Default().Handler(),
-			otelslog.NewHandler("e2c"),
+			otelslog.NewHandler(utils.APP_NAME),
 		}
 		slog.SetDefault(slog.New(slogmulti.Fanout(handlers...)))
 		logglobal.SetLoggerProvider(lp)

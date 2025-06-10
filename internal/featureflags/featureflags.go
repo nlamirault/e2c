@@ -11,6 +11,7 @@ import (
 	"log/slog"
 	"sync"
 
+	"github.com/nlamirault/e2c/internal/utils"
 	"github.com/open-feature/go-sdk/openfeature"
 )
 
@@ -89,7 +90,7 @@ func InitializeClient(log *slog.Logger, config FeatureFlagsConfig) (*openfeature
 	// })
 
 	// Create a named client
-	client = openfeature.NewClient("e2c")
+	client = openfeature.NewClient(utils.APP_NAME)
 	log.Info("Feature flag client initialized successfully", "provider", config.Provider, "metadata", provider.Metadata())
 
 	return client, err

@@ -13,6 +13,7 @@ import (
 	"github.com/nlamirault/e2c/internal/featureflags"
 	"github.com/nlamirault/e2c/internal/logger"
 	"github.com/nlamirault/e2c/internal/otel"
+	"github.com/nlamirault/e2c/internal/utils"
 )
 
 // Config represents the application configuration
@@ -82,7 +83,7 @@ func LoadConfig(configFile string, log *slog.Logger) (*Config, error) {
 	if err != nil {
 		log.Warn("Could not determine user home directory", "error", err)
 	} else {
-		configDir := filepath.Join(homeDir, ".config", "e2c")
+		configDir := filepath.Join(homeDir, ".config", utils.APP_NAME)
 		viper.AddConfigPath(configDir)
 	}
 
@@ -90,7 +91,7 @@ func LoadConfig(configFile string, log *slog.Logger) (*Config, error) {
 	viper.AddConfigPath(".")
 
 	// Environment variables
-	viper.SetEnvPrefix("E2C")
+	viper.SetEnvPrefix(strings.ToUpper(utils.APP_NAME))
 	viper.SetEnvKeyReplacer(strings.NewReplacer(`.`, `_`))
 	viper.AutomaticEnv()
 
