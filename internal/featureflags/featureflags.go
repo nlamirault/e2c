@@ -11,7 +11,7 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/open-feature/go-sdk/pkg/openfeature"
+	"github.com/open-feature/go-sdk/openfeature"
 )
 
 // ProviderType represents the type of feature flag provider to use
