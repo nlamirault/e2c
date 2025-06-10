@@ -46,51 +46,53 @@ type FeatureFlagsConfig struct {
 }
 
 // InitializeClient initializes the OpenFeature client with the specified provider
-func InitializeClient(log *slog.Logger, config FeatureFlagsConfig) error {
+func InitializeClient(log *slog.Logger, config FeatureFlagsConfig) (*openfeature.Client, error) {
 	if !config.Enabled {
 		log.Info("Feature flags are disabled, skipping initialization")
-		return nil
+		return nil, nil
 	}
 
 	// Reset the client if it already exists (to allow changing providers at runtime)
 	ResetClient()
 
-	var err error
-	clientOnce.Do(func() {
-		log.Info("Initializing feature flag client", "provider", config.Provider)
+	// var err error
+	// clientOnce.Do(func() {
 
-		var provider openfeature.FeatureProvider
-		var providerErr error
+	log.Info("Initializing feature flag client", "provider", config.Provider)
 
-		switch config.Provider {
-		case ConfigCatProvider:
-			provider, providerErr = NewConfigCatProvider(log, config.ConfigCat)
-		case EnvProvider:
-			provider, providerErr = NewEnvProvider(log, config.Env)
-		case DevCycleProvider:
-			provider, providerErr = NewDevCycleProvider(log, config.DevCycle)
-		default:
-			providerErr = fmt.Errorf("unsupported provider type: %s", config.Provider)
-		}
+	var provider openfeature.FeatureProvider
+	var providerErr error
 
-		if providerErr != nil {
-			err = providerErr
-			return
-		}
+	switch config.Provider {
+	case ConfigCatProvider:
+		provider, providerErr = NewConfigCatProvider(log, config.ConfigCat)
+	case DevCycleProvider:
+		provider, providerErr = NewDevCycleProvider(log, config.DevCycle)
+	case EnvProvider:
+		provider, providerErr = NewEnvProvider(log, config.Env)
+	default:
+		providerErr = fmt.Errorf("unsupported provider type: %s", config.Provider)
+	}
 
-		// Set the provider at the global level
-		setErr := openfeature.SetProvider(provider)
-		if setErr != nil {
-			err = fmt.Errorf("failed to set OpenFeature provider: %w", setErr)
-			return
-		}
+	if providerErr != nil {
+		// err = providerErr
+		return nil, providerErr
+	}
 
-		// Create a named client
-		client = openfeature.NewClient("e2c")
-		log.Info("Feature flag client initialized successfully", "provider", config.Provider)
-	})
+	// Set the provider at the global level
+	err := openfeature.SetProviderAndWait(provider)
+	if err != nil {
+		// err = fmt.Errorf("failed to set OpenFeature provider: %w", setErr)
+		return nil, err
+	}
 
-	return err
+	// })
+
+	// Create a named client
+	client = openfeature.NewClient("e2c")
+	log.Info("Feature flag client initialized successfully", "provider", config.Provider, "metadata", provider.Metadata())
+
+	return client, err
 }
 
 // ResetClient resets the OpenFeature client to allow reinitialization

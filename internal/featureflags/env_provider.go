@@ -8,7 +8,11 @@ import (
 	"strings"
 
 	fromenv "github.com/open-feature/go-sdk-contrib/providers/from-env/pkg"
-	"github.com/open-feature/go-sdk/pkg/openfeature"
+	"github.com/open-feature/go-sdk/openfeature"
+)
+
+const (
+	FEATURE_PREFIX = "E2C_FEATURE_"
 )
 
 // EnvConfig holds the configuration for the environment variable provider
@@ -31,7 +35,7 @@ func NewEnvProvider(log *slog.Logger, config EnvConfig) (openfeature.FeatureProv
 		options = append(options, fromenv.WithFlagToEnvMapper(func(flagKey string) string {
 			envKey := config.Prefix + flagKey
 			if !config.CaseSensitive {
-				envKey = strings.ToUpper(envKey)
+				envKey = strings.ToUpper(strings.ReplaceAll(envKey, "-", "_"))
 			}
 			return envKey
 		}))

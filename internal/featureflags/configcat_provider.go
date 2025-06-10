@@ -9,8 +9,8 @@ import (
 	"time"
 
 	configcatsdk "github.com/configcat/go-sdk/v9"
-	"github.com/open-feature/go-sdk-contrib/providers/configcat/pkg"
-	"github.com/open-feature/go-sdk/pkg/openfeature"
+	configcat "github.com/open-feature/go-sdk-contrib/providers/configcat/pkg"
+	"github.com/open-feature/go-sdk/openfeature"
 )
 
 // ConfigCatConfig holds the configuration for ConfigCat
@@ -33,7 +33,7 @@ func NewConfigCatProvider(log *slog.Logger, config ConfigCatConfig) (openfeature
 		return nil, fmt.Errorf("ConfigCat SDK key is required")
 	}
 
-	log.Info("Initializing ConfigCat provider", 
+	log.Info("Initializing ConfigCat provider",
 		"sdk_key_length", len(config.SDKKey),
 		"environment", config.Environment,
 		"base_url", config.BaseURL,
