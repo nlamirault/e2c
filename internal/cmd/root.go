@@ -20,7 +20,6 @@ import (
 	"github.com/nlamirault/e2c/internal/logger"
 	"github.com/nlamirault/e2c/internal/otel"
 	"github.com/nlamirault/e2c/internal/ui"
-	"github.com/nlamirault/e2c/internal/version"
 )
 
 // NewRootCommand creates the root command for e2c
@@ -109,7 +108,7 @@ across multiple regions.`,
 						log.Warn("OpenTelemetry configuration failed", "error", err)
 					}
 					if cfg.OpenTelemetry.Logs.Enabled {
-						// Configure slog with Otel handler.
+						// TODO:Configure slog with Otel handler.
 					}
 				}
 			}
@@ -135,7 +134,6 @@ across multiple regions.`,
 
 			return nil
 		},
-		Version: version.GetVersion(),
 	}
 
 	// Add flags
@@ -152,16 +150,16 @@ across multiple regions.`,
 	return cmd
 }
 
-// newVersionCommand creates a version command
-func newVersionCommand() *cobra.Command {
-	return &cobra.Command{
-		Use:   "version",
-		Short: "Print the version information",
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("e2c version %s\n", version.GetVersion())
-		},
-	}
-}
+// // newVersionCommand creates a version command
+// func newVersionCommand() *cobra.Command {
+// 	return &cobra.Command{
+// 		Use:   "version",
+// 		Short: "Print the version information",
+// 		Run: func(cmd *cobra.Command, args []string) {
+// 			fmt.Printf("e2c version %s\n", version.GetVersion())
+// 		},
+// 	}
+// }
 
 // Execute executes the root command
 func Execute() {
