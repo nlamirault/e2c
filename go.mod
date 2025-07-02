@@ -5,7 +5,7 @@ go 1.22
 require (
 	github.com/aws/aws-sdk-go-v2 v1.36.5
 	github.com/aws/aws-sdk-go-v2/config v1.27.7
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.225.2
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.228.0
 	github.com/gdamore/tcell/v2 v2.8.1
 	github.com/lmittmann/tint v1.1.2
 	github.com/rivo/tview v0.0.0-20240307173318-e804876934a1
