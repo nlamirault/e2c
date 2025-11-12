@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+title: e2c
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Nicolas
+    family-names: Lamirault
+    email: nicolas.lamirault@gmail.com
+abstract: >-
+  A terminal-based UI application for managing AWS EC2 instances.
+keywords:
+  - terminal ui
+  - aws ec2
+license: Apache-2.0
+repository-code: 'https://github.com/nlamirault/e2c'
+url: 'https://github.com/nlamirault/e2c'
