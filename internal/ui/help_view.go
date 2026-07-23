@@ -13,11 +13,12 @@ import (
 
 // HelpView represents the help bar at the bottom of the UI
 type HelpView struct {
-	view *tview.TextView
+	view       *tview.TextView
+	expertMode bool
 }
 
 // NewHelpView creates a new help view
-func NewHelpView() *HelpView {
+func NewHelpView(expertMode bool) *HelpView {
 	view := tview.NewTextView().
 		SetDynamicColors(true).
 		SetTextAlign(tview.AlignCenter)
@@ -27,11 +28,15 @@ func NewHelpView() *HelpView {
 
 	// Update help text
 	helpText := "[yellow]?[white]:Help  [yellow]q[white]:Quit  [yellow]r[white]:Refresh  [yellow]f[white]:Filter  [yellow]s[white]:Start  [yellow]p[white]:Stop  [yellow]b[white]:Reboot  [yellow]t[white]:Terminate  [yellow]c[white]:Connect  [yellow]l[white]:Logs"
+	if expertMode {
+		helpText += "  [yellow]x[white]:Term.Protect  [yellow]n[white]:Stop.Protect"
+	}
 
 	view.SetText(helpText)
 
 	return &HelpView{
-		view: view,
+		view:       view,
+		expertMode: expertMode,
 	}
 }
 
@@ -55,14 +60,22 @@ func (h *HelpView) Update(context string) {
 
 	switch context {
 	case "main":
-		h.view.SetText(fmt.Sprintf("[%s]?[%s]:Help [%s]q[%s]:Quit [%s]r[%s]:Refresh [%s]f[%s]:Filter [%s]s[%s]:Start [%s]p[%s]:Stop [%s]b[%s]:Reboot [%s]t[%s]:Terminate [%s]c[%s]:Connect [%s]l[%s]:Logs",
+		mainText := fmt.Sprintf("[%s]?[%s]:Help [%s]q[%s]:Quit [%s]r[%s]:Refresh [%s]f[%s]:Filter [%s]s[%s]:Start [%s]p[%s]:Stop [%s]b[%s]:Reboot [%s]t[%s]:Terminate [%s]c[%s]:Connect [%s]l[%s]:Logs",
 			highlightColor, textColor, highlightColor, textColor, highlightColor, textColor, highlightColor, textColor,
 			highlightColor, textColor, highlightColor, textColor, highlightColor, textColor, highlightColor, textColor,
-			highlightColor, textColor, highlightColor, textColor))
+			highlightColor, textColor, highlightColor, textColor)
+		if h.expertMode {
+			mainText += fmt.Sprintf(" [%s]x[%s]:Term.Protect [%s]n[%s]:Stop.Protect", highlightColor, textColor, highlightColor, textColor)
+		}
+		h.view.SetText(mainText)
 	case "detail":
-		h.view.SetText(fmt.Sprintf("[%s]Esc[%s]:Back [%s]s[%s]:Start [%s]p[%s]:Stop [%s]b[%s]:Reboot [%s]t[%s]:Terminate [%s]c[%s]:Connect [%s]l[%s]:Logs",
+		detailText := fmt.Sprintf("[%s]Esc[%s]:Back [%s]s[%s]:Start [%s]p[%s]:Stop [%s]b[%s]:Reboot [%s]t[%s]:Terminate [%s]c[%s]:Connect [%s]l[%s]:Logs",
 			highlightColor, textColor, highlightColor, textColor, highlightColor, textColor, highlightColor, textColor,
-			highlightColor, textColor, highlightColor, textColor, highlightColor, textColor))
+			highlightColor, textColor, highlightColor, textColor, highlightColor, textColor)
+		if h.expertMode {
+			detailText += fmt.Sprintf(" [%s]x[%s]:Term.Protect [%s]n[%s]:Stop.Protect", highlightColor, textColor, highlightColor, textColor)
+		}
+		h.view.SetText(detailText)
 	case "modal":
 		h.view.SetText(fmt.Sprintf("[%s]Esc[%s]:Close", highlightColor, textColor))
 	default:

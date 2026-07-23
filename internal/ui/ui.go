@@ -58,7 +58,7 @@ func NewUI(log *slog.Logger, ec2Client *aws.EC2Client, cfg *config.Config) *UI {
 	ui.instancesView = NewInstancesView(ui)
 	ui.overviewPanel = NewOverviewPanel(ui)
 	ui.statusBar = NewStatusBar(ui)
-	ui.helpView = NewHelpView()
+	ui.helpView = NewHelpView(cfg.UI.ExpertMode)
 
 	// Set initial region in status bar
 	ui.statusBar.SetRegion(ec2Client.GetRegion())
@@ -180,6 +180,16 @@ func (ui *UI) setupKeyBindings() {
 				case 'l':
 					ui.handleViewLogs()
 					return nil
+				case 'x':
+					if ui.config.UI.ExpertMode {
+						ui.handleToggleTerminationProtection()
+						return nil
+					}
+				case 'n':
+					if ui.config.UI.ExpertMode {
+						ui.handleToggleStopProtection()
+						return nil
+					}
 				}
 			}
 		}
@@ -189,13 +199,14 @@ func (ui *UI) setupKeyBindings() {
 
 // RefreshInstances refreshes the instances list
 func (ui *UI) RefreshInstances() {
+	_ = ui.instancesView.GetSelectedInstance()
 	ui.refreshMutex.Lock()
 	defer ui.refreshMutex.Unlock()
 
 	ui.statusBar.SetStatus("Refreshing instances...")
 
 	go func() {
-		instances, err := ui.ec2Client.ListInstances(ui.ctx)
+		instances, err := ui.ec2Client.ListInstances(ui.ctx, ui.config.UI.ExpertMode)
 		if err != nil {
 			ui.log.Error("Failed to list instances", "error", err)
 			ui.statusBar.SetError(fmt.Sprintf("Error: %v", err))
@@ -223,6 +234,32 @@ func (ui *UI) RefreshInstances() {
 			ui.statusBar.SetRegion(ui.ec2Client.GetRegion())
 			ui.statusBar.SetStatus(fmt.Sprintf("Found %d instances", len(filteredInstances)))
 		})
+
+		if ui.config.UI.ExpertMode {
+			ui.fetchProtectionsInBackground(filteredInstances)
+		}
+	}()
+}
+
+func (ui *UI) fetchProtectionsInBackground(instances []model.Instance) {
+	idsToFetch := make([]string, 0, len(instances))
+	for _, inst := range instances {
+		if _, _, ok := ui.ec2Client.GetCachedProtectionStatus(inst.ID); ok {
+			continue
+		}
+		idsToFetch = append(idsToFetch, inst.ID)
+	}
+
+	if len(idsToFetch) == 0 {
+		return
+	}
+
+	go func() {
+		for status := range ui.ec2Client.FetchProtectionStatuses(ui.ctx, idsToFetch, 5) {
+			ui.app.QueueUpdateDraw(func() {
+				ui.instancesView.UpdateProtection(status.InstanceID, status.TerminationProtection, status.StopProtection)
+			})
+		}
 	}()
 }
 
@@ -341,7 +378,13 @@ func (ui *UI) ShowHelpDialog() {
 		SetDynamicColors(true).
 		SetTextAlign(tview.AlignLeft)
 
-	helpText.SetText(`
+	expertShortcuts := ""
+	if ui.config.UI.ExpertMode {
+		expertShortcuts = "  [green]x[white]      Toggle termination protection[-]\n" +
+			"  [green]n[white]      Toggle stop protection[-]\n"
+	}
+
+	helpText.SetText(fmt.Sprintf(`
 [::b]e2c - AWS EC2 Terminal UI Manager[::-]
 
 [yellow]Keyboard Shortcuts:[-]
@@ -355,10 +398,10 @@ func (ui *UI) ShowHelpDialog() {
   [green]t[white]      Terminate selected instance[-]
   [green]c[white]      Connect to selected instance via SSH[-]
   [green]l[white]      View instance logs/console output[-]
-  [green]Esc[white]    Close dialogs[-]
+%s  [green]Esc[white]    Close dialogs[-]
 
 [yellow]Press Esc to close this help[-]
-`)
+`, expertShortcuts))
 
 	helpText.SetBorder(true).SetTitle("Help")
 
@@ -580,6 +623,130 @@ func (ui *UI) handleTerminateInstance() {
 	)
 }
 
+// handleToggleTerminationProtection toggles termination protection on the selected instance
+func (ui *UI) handleToggleTerminationProtection() {
+	selectedInstance := ui.instancesView.GetSelectedInstance()
+	if selectedInstance == nil {
+		ui.statusBar.SetError("No instance selected")
+		return
+	}
+
+	go func() {
+		termState := selectedInstance.TerminationProtection
+		knownTerm := selectedInstance.TerminationProtectionKnown
+		knownStop := selectedInstance.StopProtectionKnown
+
+		if !knownTerm || !knownStop {
+			refreshedTerm, _, err := ui.ec2Client.RefreshProtectionStatus(ui.ctx, selectedInstance.ID)
+			if err != nil {
+				ui.app.QueueUpdateDraw(func() {
+					ui.statusBar.SetError(fmt.Sprintf("Failed to reload protections: %v", err))
+				})
+				return
+			}
+
+			termState = refreshedTerm
+			ui.app.QueueUpdateDraw(func() {
+				ui.instancesView.UpdateProtection(selectedInstance.ID, refreshedTerm, selectedInstance.StopProtection)
+			})
+		}
+
+		targetState := !termState
+		action := "Disabling"
+		if targetState {
+			action = "Enabling"
+		}
+
+		ui.app.QueueUpdateDraw(func() {
+			ui.statusBar.SetStatus(fmt.Sprintf("%s termination protection for %s...", action, selectedInstance.ID))
+		})
+
+		err := ui.ec2Client.SetTerminationProtection(ui.ctx, selectedInstance.ID, targetState)
+		if err != nil {
+			ui.app.QueueUpdateDraw(func() {
+				ui.log.Error("Failed to update termination protection", "error", err)
+				ui.statusBar.SetError(fmt.Sprintf("Error: %v", err))
+			})
+			return
+		}
+
+		term, stop, err := ui.ec2Client.RefreshProtectionStatus(ui.ctx, selectedInstance.ID)
+		if err != nil {
+			ui.app.QueueUpdateDraw(func() {
+				ui.statusBar.SetError(fmt.Sprintf("Failed to reload protections: %v", err))
+			})
+			return
+		}
+
+		ui.app.QueueUpdateDraw(func() {
+			ui.statusBar.SetStatus(fmt.Sprintf("Termination protection %s for %s", protectionStatusText(targetState), selectedInstance.ID))
+			ui.instancesView.UpdateProtection(selectedInstance.ID, term, stop)
+		})
+	}()
+}
+
+// handleToggleStopProtection toggles stop protection on the selected instance
+func (ui *UI) handleToggleStopProtection() {
+	selectedInstance := ui.instancesView.GetSelectedInstance()
+	if selectedInstance == nil {
+		ui.statusBar.SetError("No instance selected")
+		return
+	}
+
+	go func() {
+		stopState := selectedInstance.StopProtection
+		knownTerm := selectedInstance.TerminationProtectionKnown
+		knownStop := selectedInstance.StopProtectionKnown
+
+		if !knownTerm || !knownStop {
+			_, refreshedStop, err := ui.ec2Client.RefreshProtectionStatus(ui.ctx, selectedInstance.ID)
+			if err != nil {
+				ui.app.QueueUpdateDraw(func() {
+					ui.statusBar.SetError(fmt.Sprintf("Failed to reload protections: %v", err))
+				})
+				return
+			}
+
+			stopState = refreshedStop
+			ui.app.QueueUpdateDraw(func() {
+				ui.instancesView.UpdateProtection(selectedInstance.ID, selectedInstance.TerminationProtection, refreshedStop)
+			})
+		}
+
+		targetState := !stopState
+		action := "Disabling"
+		if targetState {
+			action = "Enabling"
+		}
+
+		ui.app.QueueUpdateDraw(func() {
+			ui.statusBar.SetStatus(fmt.Sprintf("%s stop protection for %s...", action, selectedInstance.ID))
+		})
+
+		err := ui.ec2Client.SetStopProtection(ui.ctx, selectedInstance.ID, targetState)
+		if err != nil {
+			ui.app.QueueUpdateDraw(func() {
+				ui.log.Error("Failed to update stop protection", "error", err)
+				ui.statusBar.SetError(fmt.Sprintf("Error: %v", err))
+			})
+			return
+		}
+
+		term, stop, err := ui.ec2Client.RefreshProtectionStatus(ui.ctx, selectedInstance.ID)
+		if err != nil {
+			ui.app.QueueUpdateDraw(func() {
+				ui.statusBar.SetError(fmt.Sprintf("Failed to reload protections: %v", err))
+			})
+			return
+		}
+
+		ui.app.QueueUpdateDraw(func() {
+			ui.statusBar.SetStatus(fmt.Sprintf("Stop protection %s for %s", protectionStatusText(targetState), selectedInstance.ID))
+			ui.instancesView.UpdateProtection(selectedInstance.ID, term, stop)
+		})
+	}()
+}
+
 // handleConnectInstance handles connecting to the selected instance
 func (ui *UI) handleConnectInstance() {
 	selectedInstance := ui.instancesView.GetSelectedInstance()
@@ -690,6 +857,13 @@ func containsIgnoreCase(s, substr string) bool {
 	}
 	return fmt.Sprintf("%s", s) != "" &&
 		containsRune(fmt.Sprintf("%s", s), fmt.Sprintf("%s", substr))
+}
+
+func protectionStatusText(enabled bool) string {
+	if enabled {
+		return "enabled"
+	}
+	return "disabled"
 }
 
 // containsRune is a simple case-insensitive substring check

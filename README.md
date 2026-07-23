@@ -39,26 +39,32 @@ e2c
 # Start with a specific AWS region
 e2c --region eu-west-1
 
+# Start in expert mode
+e2c --expert-mode
+
 # Show help
 e2c --help
 ```
 
 ## Keyboard Shortcuts
 
-| Key   | Action                               |
-| ----- | ------------------------------------ |
-| `?`   | Help                                 |
-| `q`   | Quit                                 |
-| `Esc` | Back/Close Dialog                    |
-| `f`   | Filter instances                     |
-| `r`   | Refresh                              |
-| `s`   | Start selected instance              |
-| `p`   | Stop selected instance               |
-| `b`   | Reboot selected instance             |
-| `t`   | Terminate selected instance          |
-| `c`   | Connect to selected instance via SSH |
-| `l`   | View instance logs                   |
-| `/`   | Search                               |
+| Key   | Action                                 |
+| ----- | -------------------------------------- |
+| `?`   | Help                                   |
+| `q`   | Quit                                   |
+| `Esc` | Back/Close Dialog                      |
+| `f`   | Filter instances                       |
+| `r`   | Refresh                                |
+| `s`   | Start selected instance                |
+| `p`   | Stop selected instance                 |
+| `b`   | Reboot selected instance               |
+| `t`   | Terminate selected instance            |
+| `c`   | Connect to selected instance via SSH   |
+| `l`   | View instance logs                     |
+| `x`*   | Toggle instance termination protection |
+| `n`*   | Toggle instance stop protection        |
+
+`*` Expert mode only
 
 ## Configuration
 
@@ -76,6 +82,8 @@ aws:
   refresh_interval: 30s
 
 ui:
+  # Expert mode enables termination and stop protection options
+  expert_mode: false
   # Compact mode reduces whitespace in the UI
   compact: false
 ```

@@ -25,6 +25,7 @@ func NewRootCommand(log *slog.Logger) *cobra.Command {
 		region    string
 		logFormat string
 		logLevel  string
+		expert    bool
 	)
 
 	cmd := &cobra.Command{
@@ -64,6 +65,11 @@ across multiple regions.`,
 			// Override with CLI flags
 			cfg.Override(profile, region)
 
+			// Enable expert mode if requested via flag
+			if expert {
+				cfg.UI.ExpertMode = true
+			}
+
 			// Create AWS EC2 client
 			ec2Client, err := aws.NewEC2Client(log, cfg.AWS.DefaultRegion, cfg.AWS.Profile)
 			if err != nil {
@@ -87,6 +93,7 @@ across multiple regions.`,
 	cmd.PersistentFlags().StringVar(&region, "region", "", "AWS region to use")
 	cmd.PersistentFlags().StringVar(&logFormat, "log-format", "", "set log format (json, text)")
 	cmd.PersistentFlags().StringVar(&logLevel, "log-level", "", "set logging level (debug, info, warn, error)")
+	cmd.PersistentFlags().BoolVar(&expert, "expert-mode", false, "enable expert mode features (protection management)")
 
 	// Add version command
 	cmd.AddCommand(newVersionCommand())
